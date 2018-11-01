@@ -15,11 +15,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
 import com.oltpbenchmark.api.SQLStmt;
 import com.oltpbenchmark.benchmarks.tpcc.pojo.Customer;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.QueryResultRangeGetItems;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.QueryStockGetCountItems;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.QueryStockGetItemIDs;
+import com.oltpbenchmark.benchmarks.tpcc.procedures.StockLevel;
 import com.oltpbenchmark.api.Procedure.UserAbortException;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.results.QueryGetCustCDataResult;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.results.QueryGetCustIdResult;
@@ -57,6 +60,8 @@ public class TPCCCacheStore extends CacheStore {
     private static final String REMOVE_FIRST = "R";
     private static final String RMV = "D";
     private static final String CHECK = "C";
+    
+    private static final Logger logger = Logger.getLogger(TPCCCacheStore.class);
     
     private static void printMap(Map<String, Double> resultMap) {
         double total = 0;
@@ -194,21 +199,24 @@ public class TPCCCacheStore extends CacheStore {
             map.put(String.format(KEY_NEW_ORDER_IDS, tokens[1], tokens[2], tokens[3]), d);
             break;
         case DML_UPDATE_STOCK_PRE:
+            logger.debug(String.format("Update s_quantity of item id %s from %s to %s", tokens[2], tokens[3], tokens[7]));
             s = String.format("%s,s_quantity,%s;%s,s_ytd,%s;%s,s_order_cnt,%s;%s,s_remote_cnt,%s", 
                     SET, tokens[3], INCR, tokens[4], INCR, tokens[5], INCR, tokens[6]);
             d = new Delta(Delta.TYPE_RMW, s);
             map.put(String.format(KEY_STOCK, tokens[1], tokens[2]), d);
             
-            int quantity = Integer.parseInt(tokens[3]);
-            if (10 <= quantity && quantity <= 20) {
-                d = new Delta(Delta.TYPE_APPEND, Integer.parseInt(tokens[2]));
-                map.put(String.format(KEY_STOCK_ITEMS_EQUAL_THRESHOLD, tokens[1], tokens[3]), d);
-            }
-            
-            quantity = Integer.parseInt(tokens[7]);
-            if (10 <= quantity && quantity <= 20) {
-                d = new Delta(Delta.TYPE_RMW, Integer.parseInt(tokens[2]));
-                map.put(String.format(KEY_STOCK_ITEMS_EQUAL_THRESHOLD, tokens[1], tokens[7]), d);
+            if (!TPCCConfig.useRangeQC) {
+                int quantity = Integer.parseInt(tokens[3]);
+                if (10 <= quantity && quantity <= 20) {
+                    d = new Delta(Delta.TYPE_APPEND, Integer.parseInt(tokens[2]));
+                    map.put(String.format(KEY_STOCK_ITEMS_EQUAL_THRESHOLD, tokens[1], tokens[3]), d);
+                }
+                
+                quantity = Integer.parseInt(tokens[7]);
+                if (10 <= quantity && quantity <= 20) {
+                    d = new Delta(Delta.TYPE_RMW, Integer.parseInt(tokens[2]));
+                    map.put(String.format(KEY_STOCK_ITEMS_EQUAL_THRESHOLD, tokens[1], tokens[7]), d);
+                }
             }
             break;
         case DML_UPDATE_CUST_BAL_C_DATA_PRE:
@@ -339,14 +347,16 @@ public class TPCCCacheStore extends CacheStore {
         case DML_UPDATE_STOCK_PRE:
             set.add(String.format(KEY_STOCK, tokens[1], tokens[2]));
             
-            // old and new stock quantity
-            int quantity = Integer.parseInt(tokens[3]);
-            if (10 <= quantity && quantity <= 20) {
-                set.add(String.format(KEY_STOCK_ITEMS_EQUAL_THRESHOLD, tokens[1], tokens[3]));
-            }
-            quantity = Integer.parseInt(tokens[7]);
-            if (10 <= quantity && quantity <= 20) {
-                set.add(String.format(KEY_STOCK_ITEMS_EQUAL_THRESHOLD, tokens[1], tokens[7]));
+            if (!TPCCConfig.useRangeQC) {
+                // old and new stock quantity
+                int quantity = Integer.parseInt(tokens[3]);
+                if (10 <= quantity && quantity <= 20) {
+                    set.add(String.format(KEY_STOCK_ITEMS_EQUAL_THRESHOLD, tokens[1], tokens[3]));
+                }
+                quantity = Integer.parseInt(tokens[7]);
+                if (10 <= quantity && quantity <= 20) {
+                    set.add(String.format(KEY_STOCK_ITEMS_EQUAL_THRESHOLD, tokens[1], tokens[7]));
+                }
             }
             break;
         // payment
@@ -850,15 +860,15 @@ public class TPCCCacheStore extends CacheStore {
             map.put("s_quantity", String.valueOf(res6.getQuantity()));
             map.put("s_data", res6.getData());
             map.put("s_dist_01",res6.getDist01());
-            map.put("s_dist_01",res6.getDist01());
-            map.put("s_dist_01",res6.getDist01());
-            map.put("s_dist_01",res6.getDist01());
-            map.put("s_dist_01",res6.getDist01());
-            map.put("s_dist_01",res6.getDist01());
-            map.put("s_dist_01",res6.getDist01());
-            map.put("s_dist_01",res6.getDist01());
-            map.put("s_dist_01",res6.getDist01());
-            map.put("s_dist_01",res6.getDist01());
+            map.put("s_dist_02",res6.getDist02());
+            map.put("s_dist_03",res6.getDist03());
+            map.put("s_dist_04",res6.getDist04());
+            map.put("s_dist_05",res6.getDist05());
+            map.put("s_dist_06",res6.getDist06());
+            map.put("s_dist_07",res6.getDist07());
+            map.put("s_dist_08",res6.getDist08());
+            map.put("s_dist_09",res6.getDist09());
+            map.put("s_dist_10",res6.getDist10());
             key = String.format(KEY_STOCK, tokens[1], tokens[2]);
             break;
         case QUERY_GET_WHSE_PRE:
@@ -1161,10 +1171,18 @@ public class TPCCCacheStore extends CacheStore {
             if (obj instanceof Integer) {
                 switch (delta.getType()) {
                 case Delta.TYPE_RMW:
-                    val.remove((Integer)obj);
+                    if (val.contains(obj)) {
+                        val.remove((Integer)obj);
+                    } else {
+                        System.out.println("Value of key "+cacheEntry.getKey()+" does not contains "+obj);
+                    }
                     break;
                 case Delta.TYPE_APPEND:
-                    val.add((Integer)obj);
+                    if (val.contains((obj))) {
+                        System.out.println("Value of key "+cacheEntry.getKey()+ " contains "+ obj);
+                    } else {
+                            val.add((Integer)obj);
+                    }
                     break;
                 }
             }
@@ -1415,29 +1433,33 @@ public class TPCCCacheStore extends CacheStore {
     @Override
     public int getHashCode(String key) {
         // return the ware house
-        if (key.contains("_w") || key.contains("RANGE")) {
-            String[] fs = key.split(",");
-            try {
-                int x = Integer.parseInt(fs[1]);
-//                System.out.println(x);
-                return x-1;
-            } catch (NumberFormatException e) {
-                System.out.println("Cannot get warehouse number " + key);
+        if (false) {
+            if (key.contains("_w") || key.contains("RANGE")) {
+                String[] fs = key.split(",");
+                try {
+                    int x = Integer.parseInt(fs[1]);
+    //                System.out.println(x);
+                    return x-1;
+                } catch (NumberFormatException e) {
+                    System.out.println("Cannot get warehouse number " + key);
+                }
             }
-        }
-        
-        if (key.contains("S-")) {   // this is a session key
-            try {
-                int x = Integer.parseInt(key.split("-")[1]);
-                return x-1;
-            } catch (NumberFormatException e) {
-                System.out.println("Cannot get warehouse number " + key);
+            
+            if (key.contains("S-")) {   // this is a session key
+                try {
+                    int x = Integer.parseInt(key.split("-")[1]);
+                    return x-1;
+                } catch (NumberFormatException e) {
+                    System.out.println("Cannot get warehouse number " + key);
+                }
             }
+            
+    //        System.out.println("This key has no warehouse info "+ key);
+            
+            return -1;
+        } else {
+            return 0;
         }
-        
-//        System.out.println("This key has no warehouse info "+ key);
-        
-        return -1;
         
 //        int hc = cacheStore.getHashCode(key);
 //        return hc % mc.getPool().getServers().length; 
@@ -1678,7 +1700,7 @@ public class TPCCCacheStore extends CacheStore {
         case QUERY_RANGE_GET_ITEMS_PRE:
             int lb = Integer.parseInt(tokens[2]);
             int ub = Integer.parseInt(tokens[3]);
-            return new Interval1D(lb, ub);
+            return new Interval1D(lb, ub-1);
         default:
             return null;
         }
@@ -1707,17 +1729,17 @@ public class TPCCCacheStore extends CacheStore {
         
         switch (tokens[0]) {
         case DML_UPDATE_STOCK_PRE:      
-            int p1 = Integer.parseInt(tokens[3]);
-            int p2 = Integer.parseInt(tokens[7]);
+            int new_p = Integer.parseInt(tokens[3]);
+            int old_p = Integer.parseInt(tokens[7]);
             int i_id = Integer.parseInt(tokens[2]);
             
             Delta d = new Delta(Delta.TYPE_APPEND, i_id);
             List<Delta> ds =new ArrayList<>(); ds.add(d);
-            m.put(new Interval1D(p1,p1), ds);
+            m.put(new Interval1D(new_p,new_p), ds);
             
             d = new Delta(Delta.TYPE_RMW, i_id);
             ds =new ArrayList<>(); ds.add(d);
-            m.put(new Interval1D(p2,p2), ds);
+            m.put(new Interval1D(old_p,old_p), ds);
             
             return m;
         default:

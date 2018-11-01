@@ -97,14 +97,20 @@ public class Payment extends TPCCProcedure {
         int x = TPCCUtil.randomNumber(1, 100, gen);
         int customerDistrictID;
         int customerWarehouseID;
-        if (x <= 85) {
+        
+        if (TPCCConfig.crossWarehouse) {
+            if (x <= 85) {
+                customerDistrictID = districtID;
+                customerWarehouseID = terminalWarehouseID;
+            } else {
+                customerDistrictID = TPCCUtil.randomNumber(1, jTPCCConfig.configDistPerWhse, gen);
+                do {
+                    customerWarehouseID = TPCCUtil.randomNumber(1, numWarehouses, gen);
+                } while (customerWarehouseID == terminalWarehouseID && numWarehouses > 1);
+            }
+        } else {
             customerDistrictID = districtID;
             customerWarehouseID = terminalWarehouseID;
-        } else {
-            customerDistrictID = TPCCUtil.randomNumber(1, jTPCCConfig.configDistPerWhse, gen);
-            do {
-                customerWarehouseID = TPCCUtil.randomNumber(1, numWarehouses, gen);
-            } while (customerWarehouseID == terminalWarehouseID && numWarehouses > 1);
         }
 
         long y = TPCCUtil.randomNumber(1, 100, gen);
@@ -123,9 +129,11 @@ public class Payment extends TPCCProcedure {
 
         float paymentAmount = (float) (TPCCUtil.randomNumber(100, 500000, gen) / 100.0);
         
-        logger.debug(String.format("Payment w_id=%s, c_w_id=%s, h_amount=%s, d_id=%s, c_d_id=%s, c_id=%s,"
+        if (Config.DEBUG) {
+            out.println(String.format("Payment w_id=%s, c_w_id=%s, h_amount=%s, d_id=%s, c_d_id=%s, c_id=%s,"
                     + "c_last=%s, c_by_name=%s, cafe=%b", terminalWarehouseID, customerWarehouseID, paymentAmount, 
                     districtID, customerDistrictID, customerID, customerLastName, customerByName, false));
+        }
         
         paymentTransaction(terminalWarehouseID, customerWarehouseID, paymentAmount, 
                 districtID, customerDistrictID, customerID, customerLastName, customerByName, 
@@ -540,9 +548,11 @@ public class Payment extends TPCCProcedure {
 
         float paymentAmount = (float) (TPCCUtil.randomNumber(100, 500000, gen) / 100.0);
         
-        logger.debug(String.format("Payment w_id=%s, c_w_id=%s, h_amount=%s, d_id=%s, c_d_id=%s, c_id=%s,"
-                   + "c_last=%s, c_by_name=%s, cafe=%b", terminalWarehouseID, customerWarehouseID, paymentAmount, 
-                   districtID, customerDistrictID, customerID, customerLastName, customerByName, true));
+        if (Config.DEBUG) {
+            out.println(String.format("Payment w_id=%s, c_w_id=%s, h_amount=%s, d_id=%s, c_d_id=%s, c_id=%s,"
+                    + "c_last=%s, c_by_name=%s, cafe=%b", terminalWarehouseID, customerWarehouseID, paymentAmount, 
+                    districtID, customerDistrictID, customerID, customerLastName, customerByName, false));
+        }
         
 //        paymentTransaction(terminalWarehouseID, customerWarehouseID, paymentAmount, 
 //                districtID, customerDistrictID, customerID, customerLastName, customerByName, 

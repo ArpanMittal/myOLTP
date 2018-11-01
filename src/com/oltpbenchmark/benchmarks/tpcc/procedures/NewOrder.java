@@ -23,9 +23,11 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -102,30 +104,42 @@ public class NewOrder extends TPCCProcedure {
         int[] supplierWarehouseIDs = new int[numItems];
         int[] orderQuantities = new int[numItems];
         int allLocal = 1;
-        Arrays.sort(itemIDs);
+        Set<Integer> check = new HashSet<>();
         for (int i = 0; i < numItems; i++) {
-            itemIDs[i] = TPCCUtil.getItemID(gen);
-            if (TPCCUtil.randomNumber(1, 100, gen) > 1) {
-                supplierWarehouseIDs[i] = terminalWarehouseID;
+            while (true) {
+                itemIDs[i] = TPCCUtil.getItemID(gen);
+                if (!check.contains(itemIDs[i])) {
+                    check.add(itemIDs[i]);
+                    break;
+                }
+            }
+            if (TPCCConfig.crossWarehouse) {
+                if (TPCCUtil.randomNumber(1, 100, gen) > 1) {
+                    supplierWarehouseIDs[i] = terminalWarehouseID;
+                } else {
+                    do {
+                        supplierWarehouseIDs[i] = TPCCUtil.randomNumber(1, numWarehouses, gen);
+                    } while (supplierWarehouseIDs[i] == terminalWarehouseID && numWarehouses > 1);
+                    allLocal = 0;
+                }
             } else {
-                do {
-                    supplierWarehouseIDs[i] = TPCCUtil.randomNumber(1, numWarehouses, gen);
-                } while (supplierWarehouseIDs[i] == terminalWarehouseID && numWarehouses > 1);
-                allLocal = 0;
+                supplierWarehouseIDs[i] = terminalWarehouseID;
             }
             orderQuantities[i] = TPCCUtil.randomNumber(1, 10, gen);
         }
+        Arrays.sort(itemIDs);
 
         // we need to cause 1% of the new orders to be rolled back.
         if (TPCCUtil.randomNumber(1, 100, gen) == 1)
             itemIDs[numItems - 1] = jTPCCConfig.INVALID_ITEM_ID;
 
         if (Config.DEBUG) {
-            System.out.println(String.format("NewOrder w_id=%s, d_id=%s, c_id=%s, o_ol_cnt=%s, o_all_local=%s, itemIDs=%s,"
-                    + "supplierWarehouseIDs=%s, orderQuantities=%s, cafe=%b", 
-                    terminalWarehouseID, districtID, customerID, 
-                    numItems, allLocal, Arrays.toString(itemIDs), Arrays.toString(supplierWarehouseIDs), Arrays.toString(orderQuantities), false));
+            out.println(String.format("NewOrder w_id=%s, d_id=%s, c_id=%s, o_ol_cnt=%s, o_all_local=%s, itemIDs=%s,"
+                + "supplierWarehouseIDs=%s, orderQuantities=%s, cafe=%b", 
+                terminalWarehouseID, districtID, customerID, 
+                numItems, allLocal, Arrays.toString(itemIDs), Arrays.toString(supplierWarehouseIDs), Arrays.toString(orderQuantities), true));
         }
+        
         newOrderTransaction(terminalWarehouseID, districtID, customerID, numItems, allLocal, 
                 itemIDs, supplierWarehouseIDs, orderQuantities, conn, tres);
         return null;
@@ -973,9 +987,15 @@ public class NewOrder extends TPCCProcedure {
         int[] supplierWarehouseIDs = new int[numItems];
         int[] orderQuantities = new int[numItems];
         int allLocal = 1;
-        Arrays.sort(itemIDs);
+        Set<Integer> check = new HashSet<>();
         for (int i = 0; i < numItems; i++) {
-            itemIDs[i] = TPCCUtil.getItemID(gen);
+            while (true) {
+                itemIDs[i] = TPCCUtil.getItemID(gen);
+                if (!check.contains(itemIDs[i])) {
+                    check.add(itemIDs[i]);
+                    break;
+                }
+            }
             if (TPCCConfig.crossWarehouse) {
                 if (TPCCUtil.randomNumber(1, 100, gen) > 1) {
                     supplierWarehouseIDs[i] = terminalWarehouseID;
@@ -990,15 +1010,18 @@ public class NewOrder extends TPCCProcedure {
             }
             orderQuantities[i] = TPCCUtil.randomNumber(1, 10, gen);
         }
+        Arrays.sort(itemIDs);
 
         // we need to cause 1% of the new orders to be rolled back.
         if (TPCCUtil.randomNumber(1, 100, gen) == 1)
             itemIDs[numItems - 1] = jTPCCConfig.INVALID_ITEM_ID;
         
-        logger.debug(String.format(String.format("NewOrder w_id=%s, d_id=%s, c_id=%s, o_ol_cnt=%s, o_all_local=%s, itemIDs=%s,"
+        if (Config.DEBUG) {
+            out.println(String.format("NewOrder w_id=%s, d_id=%s, c_id=%s, o_ol_cnt=%s, o_all_local=%s, itemIDs=%s,"
                 + "supplierWarehouseIDs=%s, orderQuantities=%s, cafe=%b", 
                 terminalWarehouseID, districtID, customerID, 
-                numItems, allLocal, Arrays.toString(itemIDs), Arrays.toString(supplierWarehouseIDs), Arrays.toString(orderQuantities), true)));
+                numItems, allLocal, Arrays.toString(itemIDs), Arrays.toString(supplierWarehouseIDs), Arrays.toString(orderQuantities), true));
+        }
         
         newOrderTransaction2(terminalWarehouseID, districtID, customerID, numItems, allLocal, 
                 itemIDs, supplierWarehouseIDs, orderQuantities, conn, cafe, tres);

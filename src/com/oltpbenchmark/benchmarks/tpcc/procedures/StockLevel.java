@@ -60,7 +60,7 @@ public class StockLevel extends TPCCProcedure {
     
     public static final int SQL_INGROUP=11;
     public SQLStmt stockGetItemIdsSQL = new SQLStmt("SELECT DISTINCT(OL_I_ID) FROM " + TPCCConstants.TABLENAME_ORDERLINE + " WHERE OL_O_ID < ? AND OL_O_ID >= ? - 20" + " AND OL_D_ID = ?" + " AND OL_W_ID = ?");
-    public SQLStmt stockCountItemsIdsSQL = new SQLStmt("SELECT COUNT(*) FROM " + TPCCConstants.TABLENAME_STOCK + " WHERE S_W_ID = ?" + " AND S_I_ID IN (?,?,?,?,?,?,?,?,?,?)" + " AND S_QUANTITY < ?");
+    public SQLStmt stockCountItemsIdsSQL = new SQLStmt("SELECT COUNT(DISTINCT(S_I_ID)) FROM " + TPCCConstants.TABLENAME_STOCK + " WHERE S_W_ID = ?" + " AND S_I_ID IN (?,?,?,?,?,?,?,?,?,?)" + " AND S_QUANTITY < ?");
 
     // Stock Level Txn
     private PreparedStatement stockGetDistOrderId = null;
@@ -75,6 +75,10 @@ public class StockLevel extends TPCCProcedure {
         int threshold = TPCCUtil.randomNumber(10, 20, gen);
         int districtID = TPCCUtil.randomNumber(terminalDistrictLowerID,terminalDistrictUpperID, gen);
 
+        if (Config.DEBUG) {
+            out.println(String.format("Stock Level d_id=%d, threshold=%d", districtID, threshold));
+        }
+        
         stockLevelTransaction(terminalWarehouseID, districtID, threshold,conn, tres);
 
         return null;
@@ -108,44 +112,58 @@ public class StockLevel extends TPCCProcedure {
             itemIds.add(id);
         }
         rs.close();
-        rs = null;            
+        rs = null;
+        
+        stockGetCountStock.setInt(1, w_id);
+        stockGetCountStock.setInt(2, d_id);
+        stockGetCountStock.setInt(3, o_id);
+        stockGetCountStock.setInt(4, o_id);
+        stockGetCountStock.setInt(5, w_id);
+        stockGetCountStock.setInt(6, threshold);
+        rs = stockGetCountStock.executeQuery();
+        if (rs.next()) {
+            stock_count = rs.getInt(1);
+        }
+        rs.close();
+        rs = null;
   
-        PreparedStatement stockCountItemsIds = this.getPreparedStatement(conn, stockCountItemsIdsSQL);
-        int cnt = 1;
-        int stockCount = 0;
-        for (int itemId: itemIds) {
-            if (cnt == 1) {
-                stockCountItemsIds.setInt(1, w_id);
-            }
-            if (cnt < SQL_INGROUP) {
-                stockCountItemsIds.setInt(++cnt, itemId);
-                if (cnt == SQL_INGROUP) {
-                    stockCountItemsIds.setInt(1+SQL_INGROUP, threshold);                        
-                    rs = stockCountItemsIds.executeQuery();
-                    rs.next();
-                    stockCount += rs.getBigDecimal(1).intValue();
-                    rs.close();
-                    rs = null;
-                    
-                    cnt = 1;
-                }
-            }
-        }
-        if (cnt > 1) {
-            int x = itemIds.get(0);
-            
-            // fill the remaining with same value
-            while (cnt < SQL_INGROUP) {
-                stockCountItemsIds.setInt(++cnt, x);
-                
-            }
-            stockCountItemsIds.setInt(1+SQL_INGROUP, threshold);
-            rs = stockCountItemsIds.executeQuery();
-            rs.next();
-            stockCount += rs.getBigDecimal(1).intValue();
-            rs.close();
-            rs = null;
-        }
+//        PreparedStatement stockCountItemsIds = this.getPreparedStatement(conn, stockCountItemsIdsSQL);
+//        int cnt = 1;
+//        int stockCount = 0;
+//        for (int itemId: itemIds) {
+//            if (cnt == 1) {
+//                stockCountItemsIds.setInt(1, w_id);
+//            }
+//            
+//            if (cnt < SQL_INGROUP) {
+//                stockCountItemsIds.setInt(++cnt, itemId);
+//                if (cnt == SQL_INGROUP) {
+//                    stockCountItemsIds.setInt(1+SQL_INGROUP, threshold);                        
+//                    rs = stockCountItemsIds.executeQuery();
+//                    rs.next();
+//                    stockCount += rs.getBigDecimal(1).intValue();
+//                    rs.close();
+//                    rs = null;
+//                    
+//                    cnt = 1;
+//                }
+//            }
+//        }
+//        if (cnt > 1) {
+//            int x = itemIds.get(0);
+//            
+//            // fill the remaining with same value
+//            while (cnt < SQL_INGROUP) {
+//                stockCountItemsIds.setInt(++cnt, x);
+//                
+//            }
+//            stockCountItemsIds.setInt(1+SQL_INGROUP, threshold);
+//            rs = stockCountItemsIds.executeQuery();
+//            rs.next();
+//            stockCount += rs.getBigDecimal(1).intValue();
+//            rs.close();
+//            rs = null;
+//        }
 
         conn.commit();
 
@@ -173,7 +191,7 @@ public class StockLevel extends TPCCProcedure {
             Collections.sort(itemIds);
             tres.put("item_ids", Arrays.toString(itemIds.toArray(new Integer[0])));
             
-            tres.put("stock_count", stockCount);
+            tres.put("stock_count", stock_count);
         }
         
         if(LOG.isTraceEnabled())LOG.trace(terminalMessage.toString());
@@ -311,13 +329,20 @@ public class StockLevel extends TPCCProcedure {
                 }
                 
                 if (TPCCConfig.useRangeQC) {
-                    String query = String.format(TPCCConfig.QUERY_RANGE_GET_ITEMS,terminalWarehouseID,10,threshold);
+                    String query = String.format(TPCCConfig.QUERY_RANGE_GET_ITEMS,terminalWarehouseID,9,threshold);
                     QueryResult result = cafe.rangeReadStatement(query);
                     QueryResultRangeGetItems rs2 = (QueryResultRangeGetItems) result;
+                    
+                    Set<Integer> check = new HashSet<>();
                     List<Integer> ids = rs2.getIds();
                     for (int id: ids) {
-                        if (itemIds.contains(id)) {
-                            stock_count++;
+                        if (check.contains(id)) {
+                            System.out.println("Check contains id " + id);
+                        } else {
+                            check.add(id);
+                            if (itemIds.contains(id)) {
+                                stock_count++;
+                            }
                         }
                     }
                 } else {
@@ -328,6 +353,7 @@ public class StockLevel extends TPCCProcedure {
                     
                     if (queries.length > 0) {
                         QueryResult[] results = cafe.readStatements(queries);
+                        Set<Integer> check = new HashSet<>();
                         for (QueryResult result: results) {
                             QueryStockItemsEqualThreshold rs2 = (QueryStockItemsEqualThreshold) result;
                             if (rs2 == null) {
@@ -335,8 +361,13 @@ public class StockLevel extends TPCCProcedure {
                             }
                             List<Integer> ids = rs2.getIds();
                             for (int id: ids) {
-                                if (itemIds.contains(id)) {
-                                    stock_count++;
+                                if (check.contains(id)) {
+//                                    System.out.println("Check contains id " + id);
+                                } else {
+                                    check.add(id);
+                                    if (itemIds.contains(id)) {
+                                        stock_count++;
+                                    }
                                 }
                             }
                         }
@@ -413,6 +444,10 @@ public class StockLevel extends TPCCProcedure {
                     throws SQLException {
         int threshold = TPCCUtil.randomNumber(10, 20, gen);
         int districtID = TPCCUtil.randomNumber(terminalDistrictLowerID,terminalDistrictUpperID, gen);
+        
+        if (Config.DEBUG) {
+            out.println(String.format("Stock Level d_id=%d, threshold=%d", districtID, threshold));
+        }
         
         stockLevelTransaction2(terminalWarehouseID, districtID, threshold, cafe, conn, tres);
         return null;

@@ -4,7 +4,7 @@ output.raw
 output.res
 .classpath
 .settings
-results
+/results/
 
 ## -------------------------------
 ## Kate Swap Files

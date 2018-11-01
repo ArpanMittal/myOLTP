@@ -63,7 +63,7 @@ public class TPCCWorker extends Worker<TPCCBenchmark> {
 	private final int terminalDistrictUpperID;
 	// private boolean debugMessages;
 	
-	private final Random gen = new Random(13);
+	private final Random gen = new Random(7);
 	
     public NgCache cafe = null;
     
