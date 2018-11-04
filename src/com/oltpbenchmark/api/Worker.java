@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -44,6 +45,7 @@ import com.oltpbenchmark.benchmarks.smallbank.SmallBankWorker;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCCacheStore;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCConstants;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCWorker;
+import com.oltpbenchmark.benchmarks.tpcc.procedures.TPCCProcedure;
 import com.oltpbenchmark.catalog.Catalog;
 import com.oltpbenchmark.types.DatabaseType;
 import com.oltpbenchmark.types.State;
@@ -81,6 +83,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
 
     private static final AtomicInteger completed = new AtomicInteger(0);
     private static final Map<String, Map<String, Integer>> totalStats = new HashMap<>();
+    private static final Semaphore semaphore = new Semaphore(1);
 
     public Worker(T benchmarkModule, int id) {
         this.id = id;
@@ -399,7 +402,14 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
 
         if (Config.CAFE) {
             if (this instanceof TPCCWorker) {
+                try {
+                    semaphore.acquire();
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 ((TPCCWorker)this).cafe.aggregateStats(totalStats);
+                semaphore.release();
             }
 
             if (this instanceof TPCCWorker) {
@@ -408,6 +418,11 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
         }        
 
         if (completed.incrementAndGet() == getNumWorkers()) {
+            if (TPCCProcedure.out != null) {
+                TPCCProcedure.out.flush();
+                TPCCProcedure.out.close();
+            }
+            
             try {
                 if (Config.CAFE) {
                     if (this instanceof TPCCWorker) { 

@@ -99,6 +99,10 @@ public class OrderStatus extends TPCCProcedure {
             customerID = TPCCUtil.getCustomerID(gen);
         }
 
+        if (Config.DEBUG) {
+            out.println(String.format("Order Status d_id=%d, y=%d, c_lastname=%s, c_id=%d", districtID, y, customerLastName, customerID));
+        }
+
         orderStatusTransaction(terminalWarehouseID, districtID,
                 customerID, customerLastName, isCustomerByName, conn, tres);
         return null;
@@ -364,6 +368,10 @@ public class OrderStatus extends TPCCProcedure {
         } else {
             isCustomerByName = false;
             customerID = TPCCUtil.getCustomerID(gen);
+        }
+        
+        if (Config.DEBUG) {
+            out.println(String.format("Order Status d_id=%d, y=%d, c_lastname=%s, c_id=%d", districtID, y, customerLastName, customerID));
         }
 
         orderStatusTransaction(terminalWarehouseID, districtID,

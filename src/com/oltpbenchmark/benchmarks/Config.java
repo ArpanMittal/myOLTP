@@ -12,5 +12,5 @@ public class Config {
     public static volatile CachePolicy CACHE_POLICY = CachePolicy.WRITE_THROUGH;
     public static int NUM_AR_WORKERS = 0;
     public static int BATCH = 10;
-    public static int AR_SLEEP = 0;
+    public static int AR_SLEEP = 0; 
 }

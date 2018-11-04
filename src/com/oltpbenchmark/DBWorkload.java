@@ -345,6 +345,15 @@ public class DBWorkload {
         // loading
         // currently only for 1 warehouse
         // added by Hieu
+        int minw = 1;
+        if (argsLine.hasOption("minwhid")) {
+            minw = Integer.parseInt(argsLine.getOptionValue("minwhid"));
+        }
+        
+        int maxw = scaleFactor;
+        if (argsLine.hasOption("maxwhid")) {
+            maxw = Integer.parseInt(argsLine.getOptionValue("maxwhid"));
+        }
         if (Config.CAFE && TPCCConfig.warmup) {
             System.out.println("Load cache");
             String[] tokens = new String[10];
@@ -354,8 +363,8 @@ public class DBWorkload {
             tokens[2] = url;
             tokens[3] = user;
             tokens[4] = pass;
-            tokens[5] = "1";
-            tokens[6] = scaleFactor+"";
+            tokens[5] = minw+"";
+            tokens[6] = maxw+"";
             tokens[7] = TPCCConfig.configDistPerWhse+"";
             tokens[8] = TPCCConfig.configCustPerDist+"";
             tokens[9] = "true";

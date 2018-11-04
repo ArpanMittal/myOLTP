@@ -16,17 +16,35 @@
 
 package com.oltpbenchmark.benchmarks.tpcc.procedures;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 
 import com.oltpbenchmark.api.Procedure;
+import com.usc.dblab.cafe.Config;
 import com.usc.dblab.cafe.NgCache;
 //import com.oltpbenchmark.benchmarks.tpcc.cache.CacheTPCCWorker;
 
 public abstract class TPCCProcedure extends Procedure {
+    
+    public static PrintWriter out = null;
+    
+    static {
+        if (com.oltpbenchmark.benchmarks.Config.DEBUG) {
+            try {
+                out = new PrintWriter("/home/hieun/Desktop/verify.txt");
+            } catch (FileNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+    
     protected void sleepRetry() {
         try {
             Thread.sleep(5);

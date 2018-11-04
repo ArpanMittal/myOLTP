@@ -13,15 +13,12 @@ import com.meetup.memcached.SockIOPool;
 import com.oltpbenchmark.benchmarks.Config;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCCacheStore;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCConfig;
-import com.oltpbenchmark.benchmarks.tpcc.TPCCConstants;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCUtil;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCWriteBack;
-import com.oltpbenchmark.benchmarks.tpcc.jTPCCConfig;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.results.QueryGetCustCDataResult;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.results.QueryGetCustIdResult;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.results.QueryGetCustWhseResult;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.results.QueryGetCustomerById;
-import com.oltpbenchmark.benchmarks.tpcc.procedures.results.QueryGetCustomerByNameResult;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.results.QueryGetDist2Result;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.results.QueryGetDistResult;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.results.QueryGetItemResult;
@@ -31,7 +28,6 @@ import com.oltpbenchmark.benchmarks.tpcc.procedures.results.QueryGetSumOrderAmou
 import com.oltpbenchmark.benchmarks.tpcc.procedures.results.QueryGetWhseResult;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.results.QueryOrdStatGetNewestOrdResult;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.results.QueryOrderStatGetOrderLinesResult;
-import com.usc.dblab.cafe.QueryResult;
 import com.usc.dblab.cafe.WriteBack;
 import com.usc.dblab.cafe.CachePolicy;
 import com.usc.dblab.cafe.CacheStore;
@@ -39,7 +35,7 @@ import com.usc.dblab.cafe.NgCache;
 import com.usc.dblab.cafe.Stats;
 
 public class ReadOnly extends TPCCProcedure {
-    static Random rand = new Random();
+//    static Random rand = new Random();
 //    final static Connection[] conns = new Connection[10];
 //    final static NgCache[] ngCaches = new NgCache[10];
     
@@ -148,8 +144,8 @@ public class ReadOnly extends TPCCProcedure {
         }
         System.out.println("Cache QUERY_DISTRICT_NEXT_ORDER done.");
 
-        int start = 100000 / numWarehouses *(w_id-1)+1;
-        int end = 100000 / numWarehouses * w_id;
+        int start = 0; // numWarehouses *(w_id-1)+1;
+        int end = 100000; // numWarehouses * w_id;
 
         for (int i_id = start; i_id <= end; ++i_id) {
             String queryGetItem = String.format(TPCCConfig.QUERY_GET_ITEM, i_id);
@@ -257,7 +253,7 @@ public class ReadOnly extends TPCCProcedure {
         System.out.println("Cache QUERY_PAY_GET_CUST done.");
         
         for (int d_id = terminalDistrictLowerID; d_id <= terminalDistrictUpperID; ++d_id) {
-            for (int num = 0; num < 999; ++num) {
+            for (int num = 0; num <= 999; ++num) {
                 String lastName = TPCCUtil.getLastName(num);
                 
                 try {

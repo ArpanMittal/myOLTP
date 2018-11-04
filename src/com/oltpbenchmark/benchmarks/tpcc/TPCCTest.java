@@ -13,6 +13,7 @@ import com.oltpbenchmark.benchmarks.tpcc.procedures.Delivery;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.NewOrder;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.OrderStatus;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.Payment;
+import com.oltpbenchmark.benchmarks.tpcc.procedures.ReadOnly;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.StockLevel;
 import com.usc.dblab.cafe.WriteBack;
 import com.usc.dblab.cafe.CachePolicy;
@@ -56,6 +57,9 @@ public class TPCCTest {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        
+        String[] as = new String[] { "1", "10.0.0.210:11211", "jdbc:mysql://10.0.0.220:3306/tpcc?serverTimezone=UTC&useSSL=false", "hieun", "golinux", "1", "1", "10", "3000", "true" };
+        ReadOnly.main(as);
 
         CacheStore cacheStore = new TPCCCacheStore(conn);
         WriteBack cacheBack = new TPCCWriteBack(conn, 1);
@@ -65,10 +69,14 @@ public class TPCCTest {
                 "jdbc:mysql://10.0.0.220:3306/tpcc?serverTimezone=UTC&useSSL=false", "hieun", "golinux", true, 0, 0, 0);       
 
         Map<String, Object> tres = new HashMap<>();
+        
         while (true) {
             verifyNewOrder(tres);
             tres.clear();
         }
+//        verifyNewOrder(tres);
+//        verifyDelivery(tres);
+//        verifyNewOrder(tres);
     }
 
     private static void verifyStockLevel(Map<String, Object> tres) {

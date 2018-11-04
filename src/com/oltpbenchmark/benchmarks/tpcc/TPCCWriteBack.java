@@ -738,8 +738,8 @@ public class TPCCWriteBack extends WriteBack {
 
     @Override
     public QueryResult merge(String query, QueryResult result,
-            LinkedHashMap<String, List<Change>> buffVals) {   
-        if (buffVals.size() == 0) return result;
+            LinkedHashMap<String, List<Change>> buffVals) {
+        if (buffVals == null || buffVals.size() == 0) return result;
         
         String tokens[] = query.split(",");
         

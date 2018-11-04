@@ -150,7 +150,7 @@ public final class TPCCConfig {
     public static final String DML_INSERT_HISTORY_PRE = "DML_INSERT_HISTORY";
     public static final String DML_INSERT_HISTORY = DML_INSERT_HISTORY_PRE+",%d,%d,%d,%d,%d,%d,%.2f,%s";
 
-    public static final boolean useRangeQC = false;
+    public static final boolean useRangeQC = true;
     public static final boolean crossWarehouse = false;
     
     public static boolean warmup=false;

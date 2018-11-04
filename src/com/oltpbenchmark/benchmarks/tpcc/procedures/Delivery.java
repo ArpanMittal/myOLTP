@@ -74,6 +74,10 @@ public class Delivery extends TPCCProcedure {
         delivUpdateDeliveryDate = this.getPreparedStatement(conn, delivUpdateDeliveryDateSQL);
         delivSumOrderAmount = this.getPreparedStatement(conn, delivSumOrderAmountSQL);
         delivUpdateCustBalDelivCnt = this.getPreparedStatement(conn, delivUpdateCustBalDelivCntSQL);
+        
+        if (Config.DEBUG) {
+            out.println(String.format("Delivery w_id = %d, carrier_id=%d", terminalWarehouseID, orderCarrierID));
+        }
 
         deliveryTransaction(terminalWarehouseID, orderCarrierID, conn, tres);
         return null;
@@ -630,6 +634,11 @@ public class Delivery extends TPCCProcedure {
             NgCache cafe, Map<String, Object> tres)
                     throws SQLException {
         int orderCarrierID = TPCCUtil.randomNumber(1, 10, gen);
+        
+        if (Config.DEBUG) {
+            out.println(String.format("Delivery w_id = %d, carrier_id=%d", terminalWarehouseID, orderCarrierID));
+        }
+        
         deliveryTransaction2(terminalWarehouseID, orderCarrierID, conn, cafe, tres);
         return null;
     }
