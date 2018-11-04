@@ -5,6 +5,8 @@ output.res
 .classpath
 .settings
 /results/
+/traces/
+/extras/
 
 ## -------------------------------
 ## Kate Swap Files
