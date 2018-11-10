@@ -354,7 +354,9 @@ public class DBWorkload {
         if (argsLine.hasOption("maxwhid")) {
             maxw = Integer.parseInt(argsLine.getOptionValue("maxwhid"));
         }
-        if (Config.CAFE && TPCCConfig.warmup) {
+        //TODO: remove this cjange
+//        if (Config.CAFE && TPCCConfig.warmup) {
+        if(Config.CAFE && false) {
             System.out.println("Load cache");
             String[] tokens = new String[10];
             tokens[0] = scaleFactor+"";

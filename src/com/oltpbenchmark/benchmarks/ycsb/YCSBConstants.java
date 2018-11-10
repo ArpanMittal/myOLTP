@@ -16,7 +16,7 @@
 
 package com.oltpbenchmark.benchmarks.ycsb;
 
-public abstract class YCSBConstants {
+public final class YCSBConstants {
 
     public static final int RECORD_COUNT = 1000;
     
@@ -24,6 +24,8 @@ public abstract class YCSBConstants {
     
     public static final int FIELD_SIZE = 100; // chars
     
+    public static final String QUERY_USERTABLE = "Q_USERTABLE";
+    public static final String QUERY_KEY = QUERY_USERTABLE +",%s";
     /**
      * How big should a commit batch be when loading
      */

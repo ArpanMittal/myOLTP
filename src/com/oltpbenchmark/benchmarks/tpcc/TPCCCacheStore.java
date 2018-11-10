@@ -255,7 +255,7 @@ public class TPCCCacheStore extends CacheStore {
 
         return map;
     }
-
+    //get value like custId from query so as to make calls
     @Override
     public Set<String> getReferencedKeysFromQuery(String query) {
         String[] tokens = query.split(",");

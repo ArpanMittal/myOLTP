@@ -34,13 +34,13 @@ public class SmallBankTest {
     static SmallBankBenchmark bench;
     static SmallBankWorker worker;
     static Random rand = new Random();
-    static final int DB_SIZE = 1000000;
+    static final int DB_SIZE = 20000;
     
     public static void main(String[] args) {    
         Config.DEBUG = true;
         
         cacheConnectionPool = SockIOPool.getInstance(Config.CACHE_POOL_NAME);
-        cacheConnectionPool.setServers(new String[] { "10.0.0.210:11211" });
+        cacheConnectionPool.setServers(new String[] { "168.62.24.93:11211" });
         cacheConnectionPool.setFailover(true);
         cacheConnectionPool.setInitConn(10);
         cacheConnectionPool.setMinConn(5);
@@ -53,8 +53,8 @@ public class SmallBankTest {
         
         try {
             conn = DriverManager.getConnection(
-                    "jdbc:mysql://10.0.0.220:3306/smallbank?serverTimezone=UTC", 
-                    "hieun", "golinux");
+                    "jdbc:mysql://168.62.24.93:3306/smallbank?serverTimezone=UTC", 
+                    "user", "123456");
             conn.setAutoCommit(false);
         } catch (SQLException e) {
             // TODO Auto-generated catch block
@@ -65,8 +65,8 @@ public class SmallBankTest {
         WriteBack cacheBack = new SmallBankWriteBack(conn);
         
         cache = new NgCache(cacheStore, cacheBack, 
-                Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK, 0, Stats.getStatsInstance(0), "jdbc:mysql://10.0.0.220:3306/smallbank?serverTimezone=UTC", 
-                "hieun", "golinux", false, 0, 0, 1); 
+                Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK, 0, Stats.getStatsInstance(0), "jdbc:mysql://168.62.24.93:3306/smallbank?serverTimezone=UTC", 
+                "user", "123456", false, 0, 0, 1); 
         
         System.out.println(getName(1));
         System.out.println(getName(322));
@@ -74,20 +74,20 @@ public class SmallBankTest {
         
         System.out.println("====== Verify DepositChecking");
         verifyDepositChecking();
-        System.out.println("====== Verify WriteCheck");
-        verifyWriteCheck();
-        System.out.println("====== Verify TransactSavings");
-        verifyTransactSavings();
-        
-        System.out.println("====== Verify Amalgamate");
-        verifyAmalgamate(false);
-        System.out.println("-------------------------");
-        verifyAmalgamate(true);
-        
-        System.out.println("====== Verify Send Payment");
-        verifySendPayment(false);
-        System.out.println("-------------------------");
-        verifySendPayment(true);     
+//        System.out.println("====== Verify WriteCheck");
+//        verifyWriteCheck();
+//        System.out.println("====== Verify TransactSavings");
+//        verifyTransactSavings();
+//        
+//        System.out.println("====== Verify Amalgamate");
+//        verifyAmalgamate(false);
+//        System.out.println("-------------------------");
+//        verifyAmalgamate(true);
+//        
+//        System.out.println("====== Verify Send Payment");
+//        verifySendPayment(false);
+//        System.out.println("-------------------------");
+//        verifySendPayment(true);     
     }
     
     public static void verifyCacheHit() {
@@ -104,24 +104,24 @@ public class SmallBankTest {
     
     public static void verifyDepositChecking() {
         Map<String, Object> tres = new HashMap<String, Object>();
-        long id = rand.nextInt(DB_SIZE);
+        long id = 3;
         String name = getName(id);
         try {
             // on cache misses
-            procBalance.run(conn, name, tres);
+//            procBalance.run(conn, name, cache, tres);
             
-            tres.clear();
-            procDepositChecking.run(conn, name, 0.25, cache, tres);
+            //tres.clear();
+            procDepositChecking.run(conn, name, 125, cache, tres);
             
-            tres.clear();
+//            tres.clear();
             procBalance.run(conn, name, cache, tres);
-            
-            // on cache hits
-            tres.clear();
-            procDepositChecking.run(conn, name, 0.77, cache, tres);
-            
-            tres.clear();
-            procBalance.run(conn, name, cache, tres);
+//            
+//            // on cache hits
+//            tres.clear();
+//            procDepositChecking.run(conn, name, 0.77, cache, tres);
+//            
+//            tres.clear();
+//            procBalance.run(conn, name, cache, tres);
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

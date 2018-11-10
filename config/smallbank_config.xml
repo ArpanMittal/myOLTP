@@ -4,12 +4,12 @@
     <!-- Connection details -->
     <dbtype>mysql</dbtype>
     <driver>com.mysql.jdbc.Driver</driver>
-    <DBUrl>jdbc:mysql://10.0.0.220:3306/smallbank?serverTimezone=UTC</DBUrl>
-    <username>hieun</username>
-    <password>golinux</password>    
+    <DBUrl>jdbc:mysql://168.62.24.93:3306/smallbank?serverTimezone=UTC&amp;useSSL=false&amp;rewriteBatchedStatements=true</DBUrl>
+    <username>user</username>
+    <password>123456</password>    
     <!--<isolation>TRANSACTION_READ_COMMITTED</isolation>-->
     <isolation>TRANSACTION_SERIALIZABLE</isolation>
-    <cache>10.0.0.210:11211</cache>
+    <cache>168.62.24.93:11211</cache>
     <cafe>true</cafe>
     <logging>true</logging>
     <cachepolicy>WRITE_BACK</cachepolicy>

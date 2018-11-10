@@ -23,7 +23,12 @@ import java.sql.SQLException;
 
 import com.oltpbenchmark.api.Procedure;
 import com.oltpbenchmark.api.SQLStmt;
+import com.oltpbenchmark.api.Procedure.UserAbortException;
+import com.oltpbenchmark.benchmarks.smallbank.SmallBankConstants;
+import com.oltpbenchmark.benchmarks.smallbank.results.AccountResult;
 import com.oltpbenchmark.benchmarks.ycsb.YCSBConstants;
+import com.oltpbenchmark.benchmarks.ycsb.results.UserResult;
+import com.usc.dblab.cafe.NgCache;
 
 public class ReadRecord extends Procedure{
     public final SQLStmt readStmt = new SQLStmt(
@@ -36,10 +41,40 @@ public class ReadRecord extends Procedure{
         stmt.setInt(1, keyname);          
         ResultSet r = stmt.executeQuery();
         while(r.next()) {
-            for (int i = 0; i < YCSBConstants.NUM_FIELDS; i++)
+            for (int i = 0; i <= YCSBConstants.NUM_FIELDS; i++)
                 results[i] = r.getString(i+1);
         } // WHILE
         r.close();
+    }
+    
+    public void run(Connection conn, String keyname, NgCache cafe) throws SQLException {
+    	
+    	try {
+			cafe.startSession("Read");
+			String getUser = String.format(YCSBConstants.QUERY_KEY, keyname);
+			UserResult user_result = (UserResult) cafe.readStatement(getUser);
+			System.out.println(user_result.getYcsb_key());
+			conn.commit();
+			
+			try {
+				cafe.commitSession();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+			
+    	}catch (Exception e) {
+//		    e.printStackTrace(System.out);
+			conn.rollback();
+			try {
+				cafe.abortSession();
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			throw new UserAbortException("Some error happens. "+ e.getMessage());
+        
+    	}
     }
 
 }
