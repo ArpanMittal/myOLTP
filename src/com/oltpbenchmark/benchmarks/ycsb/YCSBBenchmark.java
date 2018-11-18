@@ -22,20 +22,36 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import com.meetup.memcached.SockIOPool;
 import com.oltpbenchmark.WorkloadConfiguration;
 import com.oltpbenchmark.api.BenchmarkModule;
 import com.oltpbenchmark.api.Loader;
 import com.oltpbenchmark.api.Worker;
+import com.oltpbenchmark.benchmarks.Config;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.InsertRecord;
 import com.oltpbenchmark.catalog.Table;
 import com.oltpbenchmark.util.SQLUtil;
 
 public class YCSBBenchmark extends BenchmarkModule {
-
+	private SockIOPool cacheConnectionPool;
     public YCSBBenchmark(WorkloadConfiguration workConf) {
         super("ycsb", workConf, true);
+        if (Config.CAFE) {
+        	cacheConnectionPool = SockIOPool.getInstance(Config.CACHE_POOL_NAME);
+        	cacheConnectionPool.setServers(Config.cacheServers);
+        	cacheConnectionPool.setFailover(true);
+        	cacheConnectionPool.setInitConn(10);
+        	cacheConnectionPool.setMinConn(5);
+        	cacheConnectionPool.setMaxConn(200);
+        	cacheConnectionPool.setNagle(false);
+        	cacheConnectionPool.setSocketTO(0);
+        	cacheConnectionPool.setAliveCheck(true);
+        	cacheConnectionPool.initialize();
+        	System.out.println("Cache servers: "+Arrays.toString(Config.cacheServers));
+        }
     }
 
     @Override

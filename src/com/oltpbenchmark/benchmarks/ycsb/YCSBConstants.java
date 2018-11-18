@@ -26,6 +26,19 @@ public final class YCSBConstants {
     
     public static final String QUERY_USERTABLE = "Q_USERTABLE";
     public static final String QUERY_KEY = QUERY_USERTABLE +",%s";
+    public static final String UPDATE_QUERY_USERTABLE = "U_USERTABLE";
+    public static final String UPDATE_QUERY_KEY = UPDATE_QUERY_USERTABLE +",%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s";
+    public static final String INSERT_QUERY_USERTABLE = "I_USERTABLE";
+    public static final String INSERT_QUERY_KEY = INSERT_QUERY_USERTABLE +",%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s";
+    public static final String DELETE_QUERY_USERTABLE = "D_USERTABLE";
+    public static final String DELETE_QUERY_KEY = DELETE_QUERY_USERTABLE + ",%s";
+    //Memcached
+    public static final String MEM_UPDATE_USERTABLE = "U_MEM_USERTABLE";
+    public static final String MEM_UPDATE_USERTABLE_KEY = MEM_UPDATE_USERTABLE + ",%s";
+    
+    //Writeback
+    public static final String WB_UPDATE_USERTABLE = "U_WB_USERTABLE";
+    public static final String WB_UPDATE_USERTABLE_KEY = WB_UPDATE_USERTABLE + ",%s";
     /**
      * How big should a commit batch be when loading
      */

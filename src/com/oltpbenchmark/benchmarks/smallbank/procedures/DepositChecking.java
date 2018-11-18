@@ -95,8 +95,16 @@ public class DepositChecking extends Procedure {
     	            String.format("Failed to update %s for customer #%d [amount=%.2f]",
     	                          SmallBankConstants.TABLENAME_CHECKING, custId, amount);			
     			
-    			conn.commit();
-    			cafe.commitSession();
+//    			conn.commit();
+//    			cafe.commitSession();
+    			
+    			if (cafe.validateSession()) {
+                    conn.commit();
+                    cafe.commitSession();
+                } else {
+                    conn.rollback();
+                    cafe.abortSession();
+                }
     			
     			generateLog(tres, custId, amount);
     			break;

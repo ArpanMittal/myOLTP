@@ -95,9 +95,19 @@ public class SmallBankWorker extends Worker<SmallBankBenchmark> {
             Stats stats = Stats.getStatsInstance(threadId);
             if (SmallBankConstants.STATS)
                 Stats.stats = true;
-            this.cafe = new NgCache(cacheStore, cacheBack, Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK, 0, stats,
-                    this.benchmarkModule.workConf.getDBConnection(), this.benchmarkModule.workConf.getDBName(), 
-                    this.benchmarkModule.workConf.getDBPassword(), true, Config.AR_SLEEP, 0, 10);
+            this.cafe = new NgCache(cacheStore, 
+            		cacheBack, 
+            		Config.CACHE_POOL_NAME, 
+            		CachePolicy.WRITE_BACK, 
+            		1, stats,
+                    this.benchmarkModule.workConf.getDBConnection(),
+                    this.benchmarkModule.workConf.getDBUsername(), 
+                    
+                    this.benchmarkModule.workConf.getDBPassword(), 
+                    true, 
+                    Config.AR_SLEEP, 
+                    0, 
+                    10);
         }
 
         if (Config.ENABLE_LOGGING) {

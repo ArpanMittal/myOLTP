@@ -160,13 +160,20 @@ public class Amalgamate extends Procedure {
 			success = cafe.writeStatement(updateCheckingBalance);
 			assert (success);
 			
-			conn.commit();
-			try {
-				cafe.commitSession();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			conn.commit();
+//			try {
+//				cafe.commitSession();
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+			if (cafe.validateSession()) {
+                conn.commit();
+                cafe.commitSession();
+            } else {
+                conn.rollback();
+                cafe.abortSession();
+            }
 			
 			generateLog(tres, custId0, custId1, sr.getBal(), cr.getBal(), 0d, total);
 		} catch (Exception e) {

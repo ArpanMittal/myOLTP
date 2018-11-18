@@ -38,7 +38,7 @@ public class TPCCTest {
         Config.ENABLE_LOGGING = true;
 
         cacheConnectionPool = SockIOPool.getInstance(Config.CACHE_POOL_NAME);
-        cacheConnectionPool.setServers(new String[] { "10.0.0.210:11211" });
+        cacheConnectionPool.setServers(new String[] { "168.62.24.93:11211" });
         cacheConnectionPool.setFailover(true);
         cacheConnectionPool.setInitConn(10);
         cacheConnectionPool.setMinConn(5);
@@ -50,28 +50,29 @@ public class TPCCTest {
 
         try {
             conn = DriverManager.getConnection(
-                    "jdbc:mysql://10.0.0.220:3306/tpcc?serverTimezone=UTC&useSSL=false", 
-                    "hieun", "golinux");
+                    "jdbc:mysql://168.62.24.93:3306/tpcc?serverTimezone=UTC&useSSL=false", 
+                    "user", "123456");
             conn.setAutoCommit(false);
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
         
-        String[] as = new String[] { "1", "10.0.0.210:11211", "jdbc:mysql://10.0.0.220:3306/tpcc?serverTimezone=UTC&useSSL=false", "hieun", "golinux", "1", "1", "10", "3000", "true" };
-        ReadOnly.main(as);
+        String[] as = new String[] { "1", "168.62.24.93:11211", "jdbc:mysql://168.62.24.93:3306/tpcc?serverTimezone=UTC&useSSL=false", "user", "123456", "1", "1", "10", "3000", "true" };
+        //ReadOnly.main(as);
 
         CacheStore cacheStore = new TPCCCacheStore(conn);
         WriteBack cacheBack = new TPCCWriteBack(conn, 1);
 
         cache = new NgCache(cacheStore, cacheBack, 
                 Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK, 0, Stats.getStatsInstance(0),
-                "jdbc:mysql://10.0.0.220:3306/tpcc?serverTimezone=UTC&useSSL=false", "hieun", "golinux", true, 0, 0, 0);       
+                "jdbc:mysql://168.62.24.93:3306/tpcc?serverTimezone=UTC&useSSL=false", "user", "123456", true, 0, 0, 0);       
 
         Map<String, Object> tres = new HashMap<>();
         
         while (true) {
-            verifyNewOrder(tres);
+            //verifyNewOrder(tres);
+            verifyDelivery4(tres);
             tres.clear();
         }
 //        verifyNewOrder(tres);
@@ -491,7 +492,7 @@ public class TPCCTest {
             delivery.deliveryTransaction(1, 115, conn, cache, tres);            
             
             tres.clear();
-            orderStatus.orderStatusTransaction(1, 1, 2666, null, false, conn, cache, tres);
+           orderStatus.orderStatusTransaction(1, 1, 2666, null, false, conn, cache, tres);
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

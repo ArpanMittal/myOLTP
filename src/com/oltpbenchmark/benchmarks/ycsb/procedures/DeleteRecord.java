@@ -19,8 +19,14 @@ package com.oltpbenchmark.benchmarks.ycsb.procedures;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
+import com.meetup.memcached.COException;
 import com.oltpbenchmark.api.Procedure;
 import com.oltpbenchmark.api.SQLStmt;
+import com.oltpbenchmark.api.Procedure.UserAbortException;
+import com.oltpbenchmark.benchmarks.tpcc.TPCCConfig;
+import com.oltpbenchmark.benchmarks.ycsb.YCSBConstants;
+import com.usc.dblab.cafe.NgCache;
 
 public class DeleteRecord extends Procedure{
     public final SQLStmt deleteStmt = new SQLStmt(
@@ -28,10 +34,49 @@ public class DeleteRecord extends Procedure{
     );
     
 	//FIXME: The value in ysqb is a byteiterator
-    public void run(Connection conn, int keyname) throws SQLException {
+    public int run(Connection conn, int keyname) throws SQLException {
         PreparedStatement stmt = this.getPreparedStatement(conn, deleteStmt);
         stmt.setInt(1, keyname);          
-        stmt.executeUpdate();
+        return stmt.executeUpdate();
     }
+    
+    public void run(Connection conn,NgCache cafe, String keyname) throws SQLException {
+//        PreparedStatement stmt = this.getPreparedStatement(conn, deleteStmt);
+//        stmt.setInt(1, keyname);          
+//        return stmt.executeUpdate();
+        
+//        while (true) {
+            try {
+            	cafe.startSession("DeleteRecord");
+            	String deleteOrder = String.format(YCSBConstants.DELETE_QUERY_KEY, keyname);
+            	boolean success = cafe.writeStatement(deleteOrder);
+                if (!success) {
+                   
+                    throw new UserAbortException(" delete failed (not running with SERIALIZABLE isolation?)"+keyname);
+                }
+                conn.commit();
+                cafe.commitSession();
+            }catch (Exception e) {
+                //                e.printStackTrace(System.out);
+                try {
+                    cafe.abortSession();
+                } catch (Exception e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+                // throw new UserAbortException("Some error happens. "+ e.getMessage());
 
+                if (e instanceof COException) {
+//                    cafe.getStats().incr(((COException) e).getKey());
+                }
+
+                try {
+                    conn.rollback();
+                } catch (SQLException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+        }
+    }
+//   }
 }

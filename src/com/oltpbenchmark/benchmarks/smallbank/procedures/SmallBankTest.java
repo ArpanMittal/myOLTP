@@ -65,7 +65,7 @@ public class SmallBankTest {
         WriteBack cacheBack = new SmallBankWriteBack(conn);
         
         cache = new NgCache(cacheStore, cacheBack, 
-                Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK, 0, Stats.getStatsInstance(0), "jdbc:mysql://168.62.24.93:3306/smallbank?serverTimezone=UTC", 
+                Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK,0 , Stats.getStatsInstance(0), "jdbc:mysql://168.62.24.93:3306/smallbank?serverTimezone=UTC", 
                 "user", "123456", false, 0, 0, 1); 
         
         System.out.println(getName(1));
@@ -74,20 +74,20 @@ public class SmallBankTest {
         
         System.out.println("====== Verify DepositChecking");
         verifyDepositChecking();
-//        System.out.println("====== Verify WriteCheck");
-//        verifyWriteCheck();
-//        System.out.println("====== Verify TransactSavings");
-//        verifyTransactSavings();
-//        
-//        System.out.println("====== Verify Amalgamate");
-//        verifyAmalgamate(false);
-//        System.out.println("-------------------------");
-//        verifyAmalgamate(true);
-//        
-//        System.out.println("====== Verify Send Payment");
-//        verifySendPayment(false);
-//        System.out.println("-------------------------");
-//        verifySendPayment(true);     
+        System.out.println("====== Verify WriteCheck");
+        verifyWriteCheck();
+        System.out.println("====== Verify TransactSavings");
+        verifyTransactSavings();
+        
+        System.out.println("====== Verify Amalgamate");
+        verifyAmalgamate(false);
+        System.out.println("-------------------------");
+        verifyAmalgamate(true);
+        
+        System.out.println("====== Verify Send Payment");
+        verifySendPayment(false);
+        System.out.println("-------------------------");
+        verifySendPayment(true);     
     }
     
     public static void verifyCacheHit() {
@@ -104,24 +104,24 @@ public class SmallBankTest {
     
     public static void verifyDepositChecking() {
         Map<String, Object> tres = new HashMap<String, Object>();
-        long id = 3;
+        long id = 4;
         String name = getName(id);
         try {
             // on cache misses
-//            procBalance.run(conn, name, cache, tres);
+            procBalance.run(conn, name, cache, tres);
             
-            //tres.clear();
+            tres.clear();
             procDepositChecking.run(conn, name, 125, cache, tres);
             
-//            tres.clear();
-            procBalance.run(conn, name, cache, tres);
+            //tres.clear();
+//            procBalance.run(conn, name, cache, tres);
 //            
 //            // on cache hits
-//            tres.clear();
-//            procDepositChecking.run(conn, name, 0.77, cache, tres);
+            tres.clear();
+            procDepositChecking.run(conn, name, 0.77, cache, tres);
 //            
-//            tres.clear();
-//            procBalance.run(conn, name, cache, tres);
+            tres.clear();
+            procBalance.run(conn, name, cache, tres);
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

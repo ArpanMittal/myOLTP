@@ -4,6 +4,7 @@ package com.oltpbenchmark.benchmarks.ycsb;
 
 
 import java.io.PrintWriter;
+import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,8 +18,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import com.oltpbenchmark.api.SQLStmt;
 import com.oltpbenchmark.benchmarks.smallbank.SmallBankConstants;
+import com.oltpbenchmark.benchmarks.ycsb.results.UserResult;
 import com.oltpbenchmark.jdbc.AutoIncrementPreparedStatement;
 import com.oltpbenchmark.types.DatabaseType;
 import com.usc.dblab.cafe.Change;
@@ -27,6 +31,9 @@ import com.usc.dblab.cafe.Session;
 import com.usc.dblab.cafe.Stats;
 import com.usc.dblab.cafe.WriteBack;
 
+import static com.oltpbenchmark.benchmarks.tpcc.TPCCConfig.DML_DELETE_NEW_ORDER_PRE;
+import static com.oltpbenchmark.benchmarks.tpcc.TPCCConstants.DATA_ITEM_DISTRICT;
+import static com.oltpbenchmark.benchmarks.tpcc.TPCCConstants.DATA_ITEM_NEW_ORDER;
 import static com.oltpbenchmark.benchmarks.ycsb.YCSBConstants.QUERY_USERTABLE;;
 
 public class YCSBWriteBack extends WriteBack {
@@ -58,6 +65,8 @@ public class YCSBWriteBack extends WriteBack {
             e.printStackTrace();
         }
 	}
+	
+	
 
 	private DatabaseType dbType;
 	private Map<String, SQLStmt> name_stmt_xref;
@@ -102,7 +111,7 @@ public class YCSBWriteBack extends WriteBack {
         switch (tokens[0]) {
         // NewOrder
         case QUERY_USERTABLE:
-            set.add(String.format(DATA_ITEM_USER, tokens[1]));
+            set.add(String.format(YCSBConstants.WB_UPDATE_USERTABLE_KEY, tokens[1]));
             break;
         
         }
@@ -116,28 +125,99 @@ public class YCSBWriteBack extends WriteBack {
         LinkedHashMap<String, Change> map = new LinkedHashMap<>();
         String it = null;
         Change c = null;
-        
-        
-		return null;
+        switch (tokens[0]) {
+        	case YCSBConstants.UPDATE_QUERY_USERTABLE:
+        		String s = String.format("%s,o_field1,%s;%s,o_field2,%s;%s,o_field3,%s;%s,o_field4,%s;%s,o_field5,%s;%s,o_field6,%s;%s,o_field7,%s;%s,o_field8,%s;%s,o_field9,%s;%s,o_field10,%s", SET, tokens[2], SET, tokens[3],SET, tokens[4],SET, tokens[5], SET, tokens[6], SET, tokens[7], SET, tokens[8],SET, tokens[9], SET, tokens[10], SET, tokens[11]);
+        		c = new Change(Change.TYPE_RMW,s);
+                it = String.format(YCSBConstants.WB_UPDATE_USERTABLE_KEY, tokens[1]);
+                break;
+        	case YCSBConstants.INSERT_QUERY_USERTABLE:
+        		String s1 = String.format(INSERT+"o_field1,%s;o_field2,%s;o_field3,%s;o_field4,%s;o_field5,%s;o_field6,%s;o_field7,%s;o_field8,%s;o_field9,%s;o_field10,%s", SET, tokens[2], SET, tokens[3],SET, tokens[4],SET, tokens[5], SET, tokens[6], SET, tokens[7], SET, tokens[8],SET, tokens[9], SET, tokens[10], SET, tokens[11]);
+        		c = new Change(Change.TYPE_RMW,s1);
+                it = String.format(YCSBConstants.WB_UPDATE_USERTABLE_KEY, tokens[1]);
+                break;
+        	case YCSBConstants.DELETE_QUERY_USERTABLE:
+        		//String s2 = String.format(DELETE+"o_field1,%s;o_field2,%s;o_field3,%s;o_field4,%s;o_field5,%s;o_field6,%s;o_field7,%s;o_field8,%s;o_field9,%s;o_field10,%s", SET, tokens[2], SET, tokens[3],SET, tokens[4],SET, tokens[5], SET, tokens[6], SET, tokens[7], SET, tokens[8],SET, tokens[9], SET, tokens[10], SET, tokens[11]);
+        		String s2 = String.format(DELETE+"o_field1,%s;o_field2,%s;o_field3,%s;o_field4,%s;o_field5,%s;o_field6,%s;o_field7,%s;o_field8,%s;o_field9,%s;o_field10,%s", SET, null, SET, null,SET, null,SET, null, SET, null, SET, null, SET, null,SET, null, SET, null, SET, null);
+                c = new Change(Change.TYPE_RMW,s2);
+                it = String.format(YCSBConstants.WB_UPDATE_USERTABLE_KEY, tokens[1]);
+                break;
+        }
+        if (c != null) 
+        	map.put(it, c);
+        return map;
+//		return null;
 	}
 
 	@Override
 	public byte[] serialize(Change change) {
 		// TODO Auto-generated method stub
-		return null;
+		 if (change.getType() != Change.TYPE_RMW)
+	            throw new NotImplementedException("Should not have change of type different than RMW");
+	        int len = 0;
+//	        String sid = change.getSid();
+//	        len += 4+sid.length();
+
+//	        int sequenceId = change.getSequenceId();
+//	        len += 4;
+
+	        String val = (String) change.getValue();
+	        len += 4+val.length();
+
+	        ByteBuffer buff = ByteBuffer.allocate(len);
+//	        buff.putInt(sid.length());
+//	        buff.put(sid.getBytes());
+//	        buff.putInt(sequenceId);
+	        buff.putInt(val.length());
+	        buff.put(val.getBytes());
+	        return buff.array();
+//		return null;
 	}
 
 	@Override
 	public Change deserialize(byte[] bytes) {
 		// TODO Auto-generated method stub
-		return null;
+		ByteBuffer buff = ByteBuffer.wrap(bytes);
+//      int len = buff.getInt();
+//      byte[] bs = new byte[len];
+//      buff.get(bs);
+//      String sid = new String(bs);
+
+//      int seqId = buff.getInt();
+
+      int len = buff.getInt();
+      byte[] bs = new byte[len];
+      buff.get(bs);
+      String val = new String(bs);
+      Change change = new Change(Change.TYPE_RMW, val);
+//      change.setSid(sid);
+//      change.setSequenceId(seqId);
+      return change;
+		
 	}
 
 	@Override
-	public boolean applySessions(List<Session> sess, Connection conn, Statement stmt, PrintWriter sessionWriter,
+	public boolean applySessions(List<Session> sessions, Connection conn, Statement stmt, PrintWriter sessionWriter,
 			Stats stats) throws Exception {
+		 Map<String, String> mergeMap = new HashMap<>(); 
+		for (Session sess: sessions) {
+	            List<String> its = sess.getIdentifiers();
+	            for (int i = 0; i < its.size(); ++i) {
+	                String identifier = its.get(i);
+	                Change change = sess.getChange(i);
+	                String val = mergeMap.get(identifier);
+	                if (val == null) {
+	                    mergeMap.put(identifier, (String)change.getValue());
+	                }
+	            }
+	            for (String it: mergeMap.keySet()) {
+	            	
+	            }
+	            throw new NotImplementedException("applySessions_inside sessions");
+		 }
+		throw new NotImplementedException("applySessions");
 		// TODO Auto-generated method stub
-		return false;
+		//return false;
 	}
 
 	@Override
@@ -147,15 +227,117 @@ public class YCSBWriteBack extends WriteBack {
 			return result;
 		
 		
-		return null;
+			String tokens[] = query.split(",");
+        
+        // since each query impacts only one data item, get the change list.
+			List<Change> changes = buffVals.values().iterator().next();
+			switch (tokens[0]) {
+				case YCSBConstants.QUERY_USERTABLE:
+					UserResult userResult = (UserResult)result;
+					  for (Change c: changes) {
+			                String val = (String)c.getValue();                
+			                String[] fs = val.split(";");
+			                //String[] fs = val.split(";");
+			                for (String f: fs) {
+			                    tokens = f.split(",");
+			                    switch (tokens[0]) {
+			                    case SET:
+			                        if (tokens[1].equals("o_field1")) {
+			                        	userResult.setField_01(tokens[2]);
+			                        } else if (tokens[1].equals("o_field2")) {
+			                        	userResult.setField_02(tokens[2]);
+			                        }else if (tokens[1].equals("o_field3")) {
+			                        	userResult.setField_03(tokens[2]);
+			                        }else if (tokens[1].equals("o_field4")) {
+			                        	userResult.setField_04(tokens[2]);
+			                        }else if (tokens[1].equals("o_field5")) {
+			                        	userResult.setField_05(tokens[2]);
+			                        }else if (tokens[1].equals("o_field5")) {
+			                        	userResult.setField_05(tokens[2]);
+			                        }else if (tokens[1].equals("o_field6")) {
+			                        	userResult.setField_06(tokens[2]);
+			                        }else if (tokens[1].equals("o_field7")) {
+			                        	userResult.setField_07(tokens[2]);
+			                        }else if (tokens[1].equals("o_field8")) {
+			                        	userResult.setField_08(tokens[2]);
+			                        }else if (tokens[1].equals("o_field9")) {
+			                        	userResult.setField_09(tokens[2]);
+			                        }else if (tokens[1].equals("o_field10")) {
+			                        	userResult.setField_10(tokens[2]);
+			                        }
+			                        break;
+			                    case INSERT:
+			                    	throw new NotImplementedException("implement insert in merge");
+			                        
+			                    }                    
+			                }
+					  }
+//			                switch (fs[0]) {
+//			                	case SET:
+//			                		userResult.setField_01(fs[2]);
+//			                		userResult.setField_02(fs[4]);
+//			                		userResult.setField_03(fs[6]);
+//			                		userResult.setField_04(fs[8]);
+//			                		userResult.setField_05(fs[10]);
+//			                		userResult.setField_06(fs[12]);
+//			                		userResult.setField_07(fs[14]);
+//			                		userResult.setField_08(fs[16]);
+//			                		userResult.setField_09(fs[18]);
+//			                		userResult.setField_10(fs[20]);
+//			                	break;
+//			                	case INSERT:
+//			                		throw new NotImplementedException("implement insert in merge");
+//			                }
+//					  }
+			}
+			return result;
+//			throw new NotImplementedException("implement merge");
+		
+//		return null;
 	}
 
 	@Override
 	public byte[] serializeSessionChanges(Map<String, List<Change>> changesMap) {
 		// TODO Auto-generated method stub
+        int totalSize = 0;
+
+        LinkedHashMap<String, byte[][]> bytesMap = new LinkedHashMap<>();
+        for (String it: changesMap.keySet()) {
+            totalSize += 4+it.length();
+
+            List<Change> changes = changesMap.get(it);
+            totalSize += 4; // storing the size of the list
+
+            byte[][] bytesList = new byte[changes.size()][];
+            for (int i = 0; i < changes.size(); ++i) {
+                Change c = changes.get(i);
+                byte[] bytes = serialize(c);
+                bytesList[i] = bytes;
+                
+                totalSize += 4;
+                totalSize += bytes.length;
+            }
+
+            bytesMap.put(it, bytesList);
+        }
+
+        ByteBuffer buff = ByteBuffer.allocate(totalSize);
+        for (String it: changesMap.keySet()) {
+            buff.putInt(it.length());
+            buff.put(it.getBytes());
+
+            byte[][] bytesList = bytesMap.get(it);
+            buff.putInt(bytesList.length);
+            for (int i = 0; i < bytesList.length; ++i) {
+                buff.putInt(bytesList[i].length);
+                buff.put(bytesList[i]);
+            }
+        }
+
+        return buff.array();
 		
-		
-		return null;
+//		throw new NotImplementedException("serializeSessionChanges");
+		//return null;
 	}
 
 	@Override
@@ -167,7 +349,38 @@ public class YCSBWriteBack extends WriteBack {
 	@Override
 	public Map<String, List<Change>> deserializeSessionChanges(byte[] bytes) {
 		// TODO Auto-generated method stub
-		return null;
+		ByteBuffer buff = ByteBuffer.wrap(bytes);
+
+        int offset = 0;
+        LinkedHashMap<String, List<Change>> changesMap = new LinkedHashMap<>();
+        while (offset < bytes.length) {
+            int sz = buff.getInt();
+            byte[] b = new byte[sz];
+            buff.get(b);
+            String it = new String(b);
+            offset += 4+sz;
+
+            sz = buff.getInt();
+            offset += 4;
+
+            List<Change> changes = new ArrayList<>();
+            for (int i = 0; i < sz; ++i) {
+                int len = buff.getInt();
+                offset += 4;
+
+                b = new byte[len];
+                buff.get(b);
+                offset += len;
+                Change c = deserialize(b);
+                changes.add(c);
+            }
+
+            changesMap.put(it, changes);
+        }
+
+        return changesMap;
+		//throw new NotImplementedException("deserializeSessionChanges");
+		//return null;
 	}
 	
 	@Override

@@ -11,7 +11,10 @@ import com.oltpbenchmark.benchmarks.Config;
 import com.oltpbenchmark.benchmarks.smallbank.SmallBankCacheStore;
 import com.oltpbenchmark.benchmarks.smallbank.SmallBankWriteBack;
 import com.oltpbenchmark.benchmarks.smallbank.procedures.Balance;
+import com.oltpbenchmark.benchmarks.ycsb.procedures.DeleteRecord;
+import com.oltpbenchmark.benchmarks.ycsb.procedures.InsertRecord;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.ReadRecord;
+import com.oltpbenchmark.benchmarks.ycsb.procedures.UpdateRecord;
 import com.usc.dblab.cafe.CachePolicy;
 import com.usc.dblab.cafe.CacheStore;
 import com.usc.dblab.cafe.NgCache;
@@ -20,6 +23,9 @@ import com.usc.dblab.cafe.WriteBack;
 
 public class YCSBTest {
 	static ReadRecord readRecord = new ReadRecord();
+	static UpdateRecord updateRecord = new UpdateRecord();
+	static InsertRecord insertRecord = new InsertRecord();
+	static DeleteRecord deleteRecord = new DeleteRecord();
 	static SockIOPool cacheConnectionPool;
     static Connection conn;
     static NgCache cache;
@@ -55,7 +61,7 @@ public class YCSBTest {
         WriteBack cacheBack = new YCSBWriteBack(conn);
         
         cache = new NgCache(cacheStore, cacheBack, 
-                Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK, 0, Stats.getStatsInstance(0), "jdbc:mysql://168.62.24.93:3306/ycsb?serverTimezone=UTC", 
+                Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK, 1, Stats.getStatsInstance(0), "jdbc:mysql://168.62.24.93:3306/ycsb?serverTimezone=UTC", 
                 "user", "123456", false, 0, 0, 1); 
         
         verifyCacheHit();
@@ -65,11 +71,24 @@ public class YCSBTest {
 	   public static void verifyCacheHit() {
 	        try {
 	        	String results[] = new String[20];
-	            for (int i = 0; i < 10; i++) {
+//	            for (int i = 0; i < 10; i++) {
 	            	//readRecord.run(conn, 2, results);
-	                readRecord.run(conn, "10", cache);
-	            }
-	            System.out.println(Stats.getAllStats().toString(2));
+	                //readRecord.run(conn, "10", cache);
+	                String[] val = {"1","2","3","4","5","6","7","8","9","10"};
+//	                readRecord.run(conn, "509", cache);
+//	                System.out.println(Stats.getAllStats().toString(2));
+	                updateRecord.run(conn,"509", cache, val);
+//	                System.out.println(Stats.getAllStats().toString(2));
+	                readRecord.run(conn, "509", cache);
+//	                
+//	                readRecord.run(conn, "502", cache);
+//	                insertRecord.run(conn,"1",cache,val);
+	                System.out.println(Stats.getAllStats().toString(2));
+	                //readRecord.run(conn, "1", cache);
+	                //deleteRecord.run(conn, cache, "520");
+	                //readRecord.run(conn, "502", cache);
+//	            }
+	            //System.out.println(Stats.getAllStats().toString(2));
 	        } catch (SQLException e) {
 	            // TODO Auto-generated catch block
 	            e.printStackTrace();

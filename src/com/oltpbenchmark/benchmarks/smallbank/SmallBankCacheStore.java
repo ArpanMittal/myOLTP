@@ -188,7 +188,8 @@ public class SmallBankCacheStore extends CacheStore {
 
     @Override
     public int getHashCode(String key) {
-        return Integer.parseInt(key.split(",")[1]);
+    	return 0;
+        //return Integer.parseInt(key.split(",")[1]);
     }
 
     @Override

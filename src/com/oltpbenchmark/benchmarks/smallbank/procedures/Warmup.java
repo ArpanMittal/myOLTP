@@ -26,10 +26,10 @@ public class Warmup {
     static SmallBankBenchmark bench;
     static SmallBankWorker worker;
     static Random rand = new Random();
-    static final int DB_SIZE = 1000000;
+    static final int DB_SIZE = 320000;
     
     public static void main(String[] args) {    
-        String dbip = args[0];
+        String dbip = "168.62.24.93";
         
         String[] caches = null;
         if (args.length >=2)
@@ -85,8 +85,8 @@ class WarmupThread extends Thread {
     public WarmupThread(int start, int end, String dbip, String[] caches) {
         try {
             conn = DriverManager.getConnection(
-                    "jdbc:mysql://"+dbip+":3306/smallbank?serverTimezone=UTC", 
-                    "hieun", "golinux");
+                    "jdbc:mysql://168.62.24.93:3306/smallbank?serverTimezone=UTC&amp;useSSL=false&amp;rewriteBatchedStatements=true", 
+                    "user", "123456");
             conn.setAutoCommit(false);
         } catch (SQLException e) {
             // TODO Auto-generated catch block
@@ -98,8 +98,8 @@ class WarmupThread extends Thread {
             WriteBack cacheBack = new SmallBankWriteBack(conn);
             
             cache = new NgCache(cacheStore, cacheBack, 
-                    Config.CACHE_POOL_NAME, CachePolicy.WRITE_THROUGH, 0, Stats.getStatsInstance(0),"jdbc:mysql://"+dbip+":3306/smallbank?serverTimezone=UTC", 
-                    "hieun", "golinux", false, 0, 0, 1);
+                    Config.CACHE_POOL_NAME, CachePolicy.WRITE_THROUGH, 0, Stats.getStatsInstance(0),"jdbc:mysql://168.62.24.93:3306/smallbank?serverTimezone=UTC", 
+                    "user", "123456", false, 0, 0, 1);
         }
         
         this.start = start;

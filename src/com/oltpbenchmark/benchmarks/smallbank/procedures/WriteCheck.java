@@ -154,13 +154,13 @@ public class WriteCheck extends Procedure {
 			assert (success) : String.format("Failed to update %s for customer #%d [total=%.2f / amount=%.2f]",
                     SmallBankConstants.TABLENAME_CHECKING, custId, balance, amount);
 			
-			conn.commit();
-			try {
-				cafe.commitSession();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			if (cafe.validateSession()) {
+                conn.commit();
+                cafe.commitSession();
+            } else {
+                conn.rollback();
+                cafe.abortSession();
+            }
 			
 			generateLog(tres, custId, checkingRes.getBal(), amount);
 		} catch (Exception e) {

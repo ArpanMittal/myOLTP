@@ -19,10 +19,16 @@ package com.oltpbenchmark.benchmarks.ycsb.procedures;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Map;
 
+import com.meetup.memcached.COException;
 import com.oltpbenchmark.api.Procedure;
 import com.oltpbenchmark.api.SQLStmt;
+import com.oltpbenchmark.api.Procedure.UserAbortException;
+import com.oltpbenchmark.benchmarks.smallbank.SmallBankConstants;
+import com.oltpbenchmark.benchmarks.smallbank.results.AccountResult;
 import com.oltpbenchmark.benchmarks.ycsb.YCSBConstants;
+import com.usc.dblab.cafe.NgCache;
 
 public class UpdateRecord extends Procedure {
     
@@ -31,13 +37,51 @@ public class UpdateRecord extends Procedure {
         "FIELD6=?,FIELD7=?,FIELD8=?,FIELD9=?,FIELD10=? WHERE YCSB_KEY=?"
     );
     
-    public void run(Connection conn, int keyname, String vals[]) throws SQLException {
+    public int run(Connection conn, int keyname, String vals[]) throws SQLException {
     	PreparedStatement stmt = this.getPreparedStatement(conn, updateAllStmt);
 		assert(vals.length == YCSBConstants.NUM_FIELDS);
 		stmt.setInt(11,keyname); 
 		for (int i = 0; i < vals.length; i++) {
             stmt.setString(i+1, vals[i]);
         }
-        stmt.executeUpdate();
+        return stmt.executeUpdate();
     }
+    
+    public void run(Connection conn, String keyName, NgCache cafe, String value[]) throws SQLException {
+        while (true) {
+    		try {
+    			cafe.startSession("UpdateRecord");
+    			
+    			String updateCheckingBalance = String.format(YCSBConstants.UPDATE_QUERY_KEY,keyName,value[0],value[1],value[2],value[3],value[4],value[5],value[6],value[7],value[8],value[9]);
+    			boolean success = cafe.writeStatement(updateCheckingBalance);
+    	        assert(success) :
+    	            String.format("Failed to update %s for customer #%s", YCSBConstants.UPDATE_QUERY_USERTABLE, keyName);			
+    			
+//    			conn.commit();
+//    			cafe.commitSession();
+    	        if (cafe.validateSession()) {
+                    conn.commit();
+                    cafe.commitSession();
+                } else {
+                    conn.rollback();
+                    cafe.abortSession();
+                }
+    			
+    			
+    			break;
+    		} catch (Exception e) {
+    //		    e.printStackTrace(System.out);
+    			conn.rollback();
+    			try {
+    				cafe.abortSession();
+    			} catch (Exception e1) {
+    				// TODO Auto-generated catch block
+    				e1.printStackTrace();
+    			}
+    			
+    			if (!(e instanceof COException))
+    			    throw new UserAbortException("Some error happens. "+ e.getMessage());
+    		}
+        }
+	}
 }

@@ -3,11 +3,20 @@
 
     <!-- Connection details -->
     <dbtype>mysql</dbtype>
+    
+    
     <driver>com.mysql.jdbc.Driver</driver>
-    <DBUrl>jdbc:mysql://168.62.24.93:3306/ycsb</DBUrl>
+    <DBUrl>jdbc:mysql://168.62.24.93:3306/ycsb?serverTimezone=UTC&amp;useSSL=false&amp;rewriteBatchedStatements=true</DBUrl>
     <username>user</username>
-    <password>123456</password>
+    <password>123456</password>    
+    <!--<isolation>TRANSACTION_READ_COMMITTED</isolation>-->
     <isolation>TRANSACTION_SERIALIZABLE</isolation>
+    <cache>168.62.24.93:11211</cache>
+    <cafe>true</cafe>
+    <logging>true</logging>
+    <cachepolicy>WRITE_BACK</cachepolicy>
+    
+    <scalefactor>1</scalefactor>
     
     <!-- Scalefactor in YCSB is *1000 the number of rows in the USERTABLE-->
     <scalefactor>1200</scalefactor>

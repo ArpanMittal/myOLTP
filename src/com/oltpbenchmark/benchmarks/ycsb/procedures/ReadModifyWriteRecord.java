@@ -21,9 +21,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import com.meetup.memcached.COException;
 import com.oltpbenchmark.api.Procedure;
 import com.oltpbenchmark.api.SQLStmt;
+import com.oltpbenchmark.api.Procedure.UserAbortException;
 import com.oltpbenchmark.benchmarks.ycsb.YCSBConstants;
+import com.oltpbenchmark.benchmarks.ycsb.results.UserResult;
+import com.usc.dblab.cafe.NgCache;
 
 public class ReadModifyWriteRecord extends Procedure {
     public final SQLStmt selectStmt = new SQLStmt(
@@ -54,6 +58,62 @@ public class ReadModifyWriteRecord extends Procedure {
         	stmt.setString(i+1, fields[i]);
         }
         stmt.executeUpdate();
+    }
+    
+    public void run(Connection conn, String keyName, NgCache cafe, String value[], String results[]) throws SQLException {
+        //TODO Complete this functionality
+        // Fetch it!
+//        PreparedStatement stmt = this.getPreparedStatement(conn, selectStmt);
+//        stmt.setInt(1, keyname);          
+//        ResultSet r = stmt.executeQuery();
+//        while (r.next()) {
+//        	for (int i = 0; i < YCSBConstants.NUM_FIELDS; i++)
+//        	    results[i] = r.getString(i+1);
+//        }
+//        r.close();
+//        
+//        // Update that mofo
+//        stmt = this.getPreparedStatement(conn, updateAllStmt);
+//        stmt.setInt(11, keyname);
+//        
+//        for (int i = 0; i < fields.length; i++) {
+//        	stmt.setString(i+1, fields[i]);
+//        }
+//        stmt.executeUpdate();
+    	while (true) {
+    		try {
+    			cafe.startSession("ReadModifyRecord");
+    			
+    			String getUser = String.format(YCSBConstants.QUERY_KEY, keyName);
+    			UserResult user_result = (UserResult) cafe.readStatement(getUser);
+    			System.out.println(user_result.getField_01());
+    			
+    			
+    			
+    			String updateCheckingBalance = String.format(YCSBConstants.UPDATE_QUERY_KEY,keyName,value[0],value[1],value[2],value[3],value[4],value[5],value[6],value[7],value[8],value[9]);
+    			boolean success = cafe.writeStatement(updateCheckingBalance);
+    	        assert(success) :
+    	            String.format("Failed to update %s for customer #%s", YCSBConstants.UPDATE_QUERY_USERTABLE, keyName);			
+    			
+    			conn.commit();
+    			cafe.commitSession();
+    			
+    			
+    			break;
+    		} catch (Exception e) {
+    //		    e.printStackTrace(System.out);
+    			conn.rollback();
+    			try {
+    				cafe.abortSession();
+    			} catch (Exception e1) {
+    				// TODO Auto-generated catch block
+    				e1.printStackTrace();
+    			}
+    			
+    			if (!(e instanceof COException))
+    			    throw new UserAbortException("Some error happens. "+ e.getMessage());
+    		}
+    		}
     }
 
 }

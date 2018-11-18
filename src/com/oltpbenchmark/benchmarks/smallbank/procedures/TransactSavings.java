@@ -140,13 +140,21 @@ public class TransactSavings extends Procedure {
                 String.format("Failed to update %s for customer #%d [balance=%.2f / amount=%.2f]",
                               SmallBankConstants.TABLENAME_CHECKING, custId, balance, amount);
             
-            conn.commit();
+//            conn.commit();
+//            
+//            try {
+//                cafe.commitSession();
+//            } catch (Exception e) {
+//                // TODO Auto-generated catch block
+//                e.printStackTrace();
+//            }
             
-            try {
+            if (cafe.validateSession()) {
+                conn.commit();
                 cafe.commitSession();
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            } else {
+                conn.rollback();
+                cafe.abortSession();
             }
             
             generateLog(tres, custId, savingsRes.getBal(), amount);

@@ -39,6 +39,7 @@ import com.oltpbenchmark.benchmarks.tpcc.procedures.results.QueryGetOrderIdResul
 import com.oltpbenchmark.benchmarks.tpcc.procedures.results.QueryGetSumOrderAmountResult;
 import com.usc.dblab.cafe.NgCache;
 import com.usc.dblab.cafe.QueryResult;
+import com.usc.dblab.cafe.Stats;
 
 public class Delivery extends TPCCProcedure {
 
@@ -289,6 +290,7 @@ public class Delivery extends TPCCProcedure {
                     
                     String getOrderId = String.format(TPCCConfig.QUERY_GET_ORDER_ID, w_id, d_id);
                     QueryGetOrderIdResult res1 = (QueryGetOrderIdResult) cafe.readStatement(getOrderId);
+//                    System.out.println(Stats.getAllStats().toString(2));
                     int no_o_id = -1;                        
                     if (res1 == null || res1.getNewOrderIds().size() == 0) {
                         // This district has no new orders; this can happen but should
@@ -304,6 +306,7 @@ public class Delivery extends TPCCProcedure {
 
                     String deleteNewOrder = String.format(TPCCConfig.DML_DELETE_NEW_ORDER, w_id, d_id, no_o_id);
                     boolean success = cafe.writeStatement(deleteNewOrder);
+                   // System.out.println(Stats.getAllStats().toString(2));
                     if (!success) {
                         // This code used to run in a loop in an attempt to make this
                         // work
@@ -333,6 +336,7 @@ public class Delivery extends TPCCProcedure {
 
                     String updateCarrierId = String.format(TPCCConfig.DML_UPDATE_CARRIER_ID, w_id, d_id, no_o_id, o_carrier_id, c_id);
                     success = cafe.writeStatement(updateCarrierId);
+//                    System.out.println(Stats.getAllStats().toString(2));
                     if (TPCCConstants.DML_Trace) {
                         int count = (Integer) tres.get("count");
                         tres.put("DML" + count, delivUpdateCarrierId.toString());

@@ -159,13 +159,21 @@ public class SendPayment extends Procedure {
 	            String.format("Failed to update %s for customer #%d [amount=%.2f]",
 	                          SmallBankConstants.TABLENAME_CHECKING, destAcct, amount);
     		
-    		conn.commit();
-			try {
-				cafe.commitSession();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//    		conn.commit();
+//			try {
+//				cafe.commitSession();
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+	        
+	        if (cafe.validateSession()) {
+                conn.commit();
+                cafe.commitSession();
+            } else {
+                conn.rollback();
+                cafe.abortSession();
+            }
 			
 			generateLog(tres, sendAcct, destAcct, sendCheckingRes.getBal(), amount);
     	} catch (Exception e) {

@@ -219,6 +219,7 @@ public class TPCCCacheStore extends CacheStore {
                 }
             }
             break;
+            
         case DML_UPDATE_CUST_BAL_C_DATA_PRE:
             s = String.format("%s,c_balance,%s;%s,c_ytd_payment,%s;%s,c_payment_cnt,%s",
                     SET, tokens[4], SET, tokens[5], SET, tokens[6]);

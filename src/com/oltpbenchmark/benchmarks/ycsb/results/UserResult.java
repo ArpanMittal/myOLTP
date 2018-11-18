@@ -4,16 +4,16 @@ import com.usc.dblab.cafe.QueryResult;
 
 public class UserResult extends QueryResult {
 	final int ycsb_key;
-    final String field_01;
-    final String field_02;
-    final String field_03;
-    final String field_04;
-    final String field_05;
-    final String field_06;
-    final String field_07;
-    final String field_08;
-    final String field_09;
-    final String field_10;
+    String field_01;
+    String field_02;
+    String field_03;
+    String field_04;
+    String field_05;
+    String field_06;
+    String field_07;
+    String field_08;
+    String field_09;
+    String field_10;
 	/**
 	 * @param query
 	 * @param ycsb_key
@@ -109,6 +109,68 @@ public class UserResult extends QueryResult {
 	public String getField_10() {
 		return field_10;
 	}
+	/**
+	 * @param field_01 the field_01 to set
+	 */
+	public void setField_01(String field_01) {
+		this.field_01 = field_01;
+	}
+	/**
+	 * @param field_02 the field_02 to set
+	 */
+	public void setField_02(String field_02) {
+		this.field_02 = field_02;
+	}
+	/**
+	 * @param field_03 the field_03 to set
+	 */
+	public void setField_03(String field_03) {
+		this.field_03 = field_03;
+	}
+	/**
+	 * @param field_04 the field_04 to set
+	 */
+	public void setField_04(String field_04) {
+		this.field_04 = field_04;
+	}
+	/**
+	 * @param field_05 the field_05 to set
+	 */
+	public void setField_05(String field_05) {
+		this.field_05 = field_05;
+	}
+	/**
+	 * @param field_06 the field_06 to set
+	 */
+	public void setField_06(String field_06) {
+		this.field_06 = field_06;
+	}
+	/**
+	 * @param field_07 the field_07 to set
+	 */
+	public void setField_07(String field_07) {
+		this.field_07 = field_07;
+	}
+	/**
+	 * @param field_08 the field_08 to set
+	 */
+	public void setField_08(String field_08) {
+		this.field_08 = field_08;
+	}
+	/**
+	 * @param field_09 the field_09 to set
+	 */
+	public void setField_09(String field_09) {
+		this.field_09 = field_09;
+	}
+	/**
+	 * @param field_10 the field_10 to set
+	 */
+	public void setField_10(String field_10) {
+		this.field_10 = field_10;
+	}
+	
+	
     
 	
 

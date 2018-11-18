@@ -16,14 +16,23 @@
 
 package com.oltpbenchmark.benchmarks.ycsb;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 import com.oltpbenchmark.api.Procedure;
 import com.oltpbenchmark.api.Procedure.UserAbortException;
 import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.Worker;
+import com.oltpbenchmark.benchmarks.Config;
+import com.oltpbenchmark.benchmarks.smallbank.SmallBankCacheStore;
+import com.oltpbenchmark.benchmarks.smallbank.SmallBankConstants;
+import com.oltpbenchmark.benchmarks.smallbank.SmallBankWriteBack;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.DeleteRecord;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.InsertRecord;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.ReadModifyWriteRecord;
@@ -34,6 +43,11 @@ import com.oltpbenchmark.distributions.CounterGenerator;
 import com.oltpbenchmark.distributions.ZipfianGenerator;
 import com.oltpbenchmark.types.TransactionStatus;
 import com.oltpbenchmark.util.TextGenerator;
+import com.usc.dblab.cafe.CachePolicy;
+import com.usc.dblab.cafe.CacheStore;
+import com.usc.dblab.cafe.NgCache;
+import com.usc.dblab.cafe.Stats;
+import com.usc.dblab.cafe.WriteBack;
 
 /**
  * YCSBWorker Implementation
@@ -50,13 +64,21 @@ public class YCSBWorker extends Worker<YCSBBenchmark> {
     private final char data[] = new char[YCSBConstants.FIELD_SIZE];
     private final String params[] = new String[YCSBConstants.NUM_FIELDS]; 
     private final String results[] = new String[YCSBConstants.NUM_FIELDS];
-    
+    private int threadId;
     private final UpdateRecord procUpdateRecord;
     private final ScanRecord procScanRecord;
     private final ReadRecord procReadRecord;
     private final ReadModifyWriteRecord procReadModifyWriteRecord;
     private final InsertRecord procInsertRecord;
     private final DeleteRecord procDeleteRecord;
+    public NgCache cafe = null;
+    private CacheStore cacheStore;
+    private WriteBack cacheBack;
+    public HashMap<String, Object> transactionResults = null;
+    public BufferedWriter updateLogAll = null;
+    public BufferedWriter readLogAll = null;
+    private StringBuilder readLog = null;
+    private StringBuilder updateLog = null;
     
     public YCSBWorker(YCSBBenchmark benchmarkModule, int id, int init_record_count) {
         super(benchmarkModule, id);
@@ -73,6 +95,34 @@ public class YCSBWorker extends Worker<YCSBBenchmark> {
         // This is a minor speed-up to avoid having to invoke the hashmap look-up
         // everytime we want to execute a txn. This is important to do on 
         // a client machine with not a lot of cores
+        if (Config.CAFE) {
+            cacheStore = new YCSBCacheStore(conn);
+            cacheBack = new YCSBWriteBack(conn);
+            Stats stats = Stats.getStatsInstance(threadId);
+            if (SmallBankConstants.STATS)
+                Stats.stats = true;
+            this.cafe = new NgCache(cacheStore, cacheBack, Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK, 1, stats,
+                    this.benchmarkModule.workConf.getDBConnection(), this.benchmarkModule.workConf.getDBUsername(), 
+                    this.benchmarkModule.workConf.getDBPassword(), true, Config.AR_SLEEP, 0, 10);
+        }
+
+        if (Config.ENABLE_LOGGING) {
+            try {
+                String dir = SmallBankConstants.TRACE_LOGGING_DIR;
+                File ufile = new File(dir + "/update0-" + threadId + ".txt");
+                FileWriter ufstream = new FileWriter(ufile);
+                updateLogAll = new BufferedWriter(ufstream);
+                // read file
+                File rfile = new File(dir + "/read0-" + threadId + ".txt");
+                FileWriter rfstream = new FileWriter(rfile);
+                readLogAll = new BufferedWriter(rfstream);
+                readLog = new StringBuilder();
+                updateLog = new StringBuilder();
+            } catch (IOException e) {
+                e.printStackTrace(System.out);
+            }
+            transactionResults = new HashMap<String, Object>();
+        }
         this.procUpdateRecord = this.getProcedure(UpdateRecord.class);
         this.procScanRecord = this.getProcedure(ScanRecord.class);
         this.procReadRecord = this.getProcedure(ReadRecord.class);
@@ -106,7 +156,11 @@ public class YCSBWorker extends Worker<YCSBBenchmark> {
         assert (this.procUpdateRecord!= null);
         int keyname = readRecord.nextInt();
         this.buildParameters();
-        this.procUpdateRecord.run(conn, keyname, this.params);
+        if(Config.CAFE)
+        	this.procUpdateRecord.run(conn, keyname+"", this.cafe, this.params);
+//        	this.procUpdateRecord.run(conn, keyname, this.params);
+        else
+        	this.procUpdateRecord.run(conn, keyname, this.params);
     }
 
     private void scanRecord() throws SQLException {
@@ -119,27 +173,40 @@ public class YCSBWorker extends Worker<YCSBBenchmark> {
     private void readRecord() throws SQLException {
         assert (this.procReadRecord != null);
         int keyname = readRecord.nextInt();
-        this.procReadRecord.run(conn, keyname, this.results);
+        if(Config.CAFE)
+        	this.procReadRecord.run(conn, keyname+"", this.cafe);
+        	//this.procReadRecord.run(conn, keyname, this.results);
+        else
+        	this.procReadRecord.run(conn, keyname, this.results);
     }
 
     private void readModifyWriteRecord() throws SQLException {
         assert (this.procReadModifyWriteRecord != null);
         int keyname = readRecord.nextInt();
         this.buildParameters();
-        this.procReadModifyWriteRecord.run(conn, keyname, this.params, this.results);
+        if(Config.CAFE)
+        	this.procReadModifyWriteRecord.run(conn, keyname+"", this.cafe, this.params, this.results);
+        else
+        	this.procReadModifyWriteRecord.run(conn, keyname, this.params, this.results);
     }
 
     private void insertRecord() throws SQLException {
         assert (this.procInsertRecord != null);
         int keyname = insertRecord.nextInt();
         this.buildParameters();
-        this.procInsertRecord.run(conn, keyname, this.params);
+        if(Config.CAFE)
+        	this.procInsertRecord.run(conn, keyname+"",this.cafe, this.params);
+        else
+        	this.procInsertRecord.run(conn, keyname, this.params);
     }
 
     private void deleteRecord() throws SQLException {
         assert (this.procDeleteRecord != null);
         int keyname = readRecord.nextInt();
-        this.procDeleteRecord.run(conn, keyname);
+        if(Config.CAFE)
+        	this.procDeleteRecord.run(conn, this.cafe,keyname+"");
+        else
+        	this.procDeleteRecord.run(conn, keyname);
     }
 
     private void buildParameters() {

@@ -53,7 +53,7 @@ public class ReadRecord extends Procedure{
 			cafe.startSession("Read");
 			String getUser = String.format(YCSBConstants.QUERY_KEY, keyname);
 			UserResult user_result = (UserResult) cafe.readStatement(getUser);
-			System.out.println(user_result.getYcsb_key());
+			System.out.println(user_result.getField_01());
 			conn.commit();
 			
 			try {

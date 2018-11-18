@@ -1,5 +1,10 @@
 package com.oltpbenchmark.benchmarks.ycsb;
 
+import static com.oltpbenchmark.benchmarks.tpcc.TPCCConfig.DML_DELETE_NEW_ORDER_PRE;
+import static com.oltpbenchmark.benchmarks.tpcc.TPCCConfig.DML_UPDATE_DIST_PRE;
+import static com.oltpbenchmark.benchmarks.tpcc.TPCCConfig.DML_UPDATE_STOCK_PRE;
+import static com.oltpbenchmark.benchmarks.tpcc.TPCCConstants.KEY_LAST_ORDER;
+import static com.oltpbenchmark.benchmarks.tpcc.TPCCConstants.KEY_NEW_ORDER_IDS;
 import static com.oltpbenchmark.benchmarks.tpcc.TPCCConstants.KEY_STOCK;
 
 import java.nio.ByteBuffer;
@@ -7,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,27 +34,44 @@ import com.oltpbenchmark.jdbc.AutoIncrementPreparedStatement;
 import com.oltpbenchmark.types.DatabaseType;
 import com.usc.dblab.cafe.CacheEntry;
 import com.usc.dblab.cafe.CacheStore;
+import com.usc.dblab.cafe.Change;
 import com.usc.dblab.cafe.Delta;
 import com.usc.dblab.cafe.QueryResult;
+
+import edu.usc.dblab.intervaltree.Interval1D;
+
 import com.oltpbenchmark.benchmarks.ycsb.YCSBConstants;
+import com.oltpbenchmark.benchmarks.ycsb.procedures.DeleteRecord;
+import com.oltpbenchmark.benchmarks.ycsb.procedures.InsertRecord;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.ReadRecord;
+import com.oltpbenchmark.benchmarks.ycsb.procedures.UpdateRecord;
 
 public class YCSBCacheStore extends CacheStore {
-	public static final String KEY_USER_NAME_PREFIX = "k_usr_name";
-    public static final String KEY_USER_NAME = KEY_USER_NAME_PREFIX+",%s";
+	private static final String SET = "S";
+    private static final String INCR = "P";
+    private static final String INCR_OR_SET = "O";
+    private static final String ADD = "A";
+    private static final String REMOVE_FIRST = "R";
+    private static final String RMV = "D";
+    private static final String CHECK = "C";
+//	public static final String KEY_USER_NAME_PREFIX = "k_usr_name";
+//    public static final String KEY_USER_NAME = KEY_USER_NAME_PREFIX+",%s";
     final static ReadRecord readRecord = new ReadRecord();
+    final static UpdateRecord updateRecord = new UpdateRecord();
+    final static InsertRecord insertRecord= new InsertRecord(); 
+    final static DeleteRecord deleteRecord = new DeleteRecord();
 	private DatabaseType dbType;
     private Map<String, SQLStmt> name_stmt_xref;
     private final Map<SQLStmt, String> stmt_name_xref = new HashMap<SQLStmt, String>();
     private final Map<SQLStmt, PreparedStatement> prepardStatements = new HashMap<SQLStmt, PreparedStatement>();
-
+    
     private Connection conn;
 	
     public final SQLStmt READ_STMT = new SQLStmt(
             "SELECT * FROM usertable WHERE YCSB_KEY=?"
         );
     
-    public final SQLStmt updateAllStmt = new SQLStmt(
+    public final SQLStmt KEY_UPDATE_STMT = new SQLStmt(
             "UPDATE USERTABLE SET FIELD1=?,FIELD2=?,FIELD3=?,FIELD4=?,FIELD5=?," +
             "FIELD6=?,FIELD7=?,FIELD8=?,FIELD9=?,FIELD10=? WHERE YCSB_KEY=?"
         );
@@ -69,8 +92,26 @@ public class YCSBCacheStore extends CacheStore {
 	@Override
 	public Map<String, Delta> updateCacheEntries(String dml, Set<String> keys) {
 		// TODO Auto-generated method stub
-		
-		return null;
+        String[] tokens = dml.split(",");
+        Delta d = null;
+        String s;
+        Map<String, Delta> map = new HashMap<>();
+        switch (tokens[0]) {
+        case YCSBConstants.DELETE_QUERY_USERTABLE:
+        	//s = String.format("%s,o_field1,%s;%s,o_field2,%s;%s,o_field3,%s;%s,o_field4,%s;%s,o_field5,%s;%s,o_field6,%s;%s,o_field7,%s;%s,o_field8,%s;%s,o_field9,%s;%s,o_field10,%s", SET, tokens[2], SET, tokens[3],SET, tokens[4],SET, tokens[5], SET, tokens[6], SET, tokens[7], SET, tokens[8],SET, tokens[9], SET, tokens[10], SET, tokens[11]);
+            s = String.format("%s,o_field1,%s;%s,o_field2,%s;%s,o_field3,%s;%s,o_field4,%s;%s,o_field5,%s;%s,o_field6,%s;%s,o_field7,%s;%s,o_field8,%s;%s,o_field9,%s;%s,o_field10,%s", SET, null, SET, null,SET, null,SET, null, SET, null, SET, null, SET, null,SET, null, SET, null, SET, null);
+            d = new Delta(Change.TYPE_RMW, s);
+            map.put(String.format(YCSBConstants.MEM_UPDATE_USERTABLE_KEY, tokens[1]), d);  
+            break;
+        default:
+	        s = String.format("%s,o_field1,%s;%s,o_field2,%s;%s,o_field3,%s;%s,o_field4,%s;%s,o_field5,%s;%s,o_field6,%s;%s,o_field7,%s;%s,o_field8,%s;%s,o_field9,%s;%s,o_field10,%s", SET, tokens[2], SET, tokens[3],SET, tokens[4],SET, tokens[5], SET, tokens[6], SET, tokens[7], SET, tokens[8],SET, tokens[9], SET, tokens[10], SET, tokens[11]);
+	        
+	        d = new Delta(Change.TYPE_RMW, s);
+	        map.put(String.format(YCSBConstants.MEM_UPDATE_USERTABLE_KEY, tokens[1]), d);  
+        }
+        
+        return map;
+        
 	}
 
 	@Override
@@ -82,8 +123,9 @@ public class YCSBCacheStore extends CacheStore {
 
         switch (op) {
         case YCSBConstants.QUERY_USERTABLE:
-            set.add(String.format(KEY_USER_NAME, tokens[1]));
+            set.add(String.format(YCSBConstants.MEM_UPDATE_USERTABLE_KEY, tokens[1]));
             break;
+           
 //        case SmallBankConstants.QUERY_ACCOUNT_BY_CUSTID_PREFIX:
 //            set.add(String.format(KEY_ACCT_ID, tokens[1]));
 //            break;
@@ -102,7 +144,27 @@ public class YCSBCacheStore extends CacheStore {
 	@Override
 	public Set<String> getImpactedKeysFromDml(String dml) {
 		// TODO Auto-generated method stub
-		return null;
+		//This is dml memcached is different
+		String[] tokens = dml.split(",");
+        String op = tokens[0];
+        Set<String> set = new HashSet<>();
+
+        switch (op) {
+        case YCSBConstants.UPDATE_QUERY_USERTABLE:
+            set.add(String.format(YCSBConstants.MEM_UPDATE_USERTABLE_KEY, tokens[1]));
+//        case SmallBankConstants.UPDATE_SAVINGS_PREFIX:
+//            set.add(String.format(KEY_SAVINGS_BAL, tokens[1]));
+//            break;
+            break;
+        case YCSBConstants.INSERT_QUERY_USERTABLE:
+        	set.add(String.format(YCSBConstants.MEM_UPDATE_USERTABLE_KEY, tokens[1]));
+        	break;
+        case YCSBConstants.DELETE_QUERY_USERTABLE:
+            set.add(String.format(YCSBConstants.MEM_UPDATE_USERTABLE_KEY, tokens[1]));
+            break;
+        }
+
+        return set;
 	}
 
 	@Override
@@ -220,7 +282,7 @@ public class YCSBCacheStore extends CacheStore {
                 map.put("u_field8", user_res.getField_08());
                 map.put("u_field9", user_res.getField_09());
                 map.put("u_field10", user_res.getField_10());
-                String key = String.format(KEY_USER_NAME, tokens[1]);
+                String key = String.format(YCSBConstants.MEM_UPDATE_USERTABLE_KEY, tokens[1]);
                 
                 if (map.size() > 0) {
                     e = new CacheEntry(key, map, false);
@@ -253,14 +315,170 @@ public class YCSBCacheStore extends CacheStore {
 	@Override
 	public boolean dmlDataStore(String dml) throws Exception {
 		// TODO Auto-generated method stub
+		String[] tokens = dml.split(",");
+		switch (tokens[0]) {
+			case YCSBConstants.UPDATE_QUERY_USERTABLE:
+				String[] value = new String[10];
+				value[0] = tokens[2];
+				value[1] = tokens[3];
+				value[2] = tokens[4];
+				value[3] = tokens[5];
+				value[4] = tokens[6];
+				value[5] = tokens[7];
+				value[6] = tokens[8];
+				value[7] = tokens[9];
+				value[8] = tokens[10];
+				value[9] = tokens[11];
+
+				int result = updateRecord.run(conn, Integer.parseInt(tokens[1]), value );
+				if (result == 0)
+	                throw new RuntimeException("Error!! Cannot update ycsb_id ="+tokens[1]);
+	            return true;
+			case YCSBConstants.INSERT_QUERY_USERTABLE:
+				value = new String[10];
+				value[0] = tokens[2];
+				value[1] = tokens[3];
+				value[2] = tokens[4];
+				value[3] = tokens[5];
+				value[4] = tokens[6];
+				value[5] = tokens[7];
+				value[6] = tokens[8];
+				value[7] = tokens[9];
+				value[8] = tokens[10];
+				value[9] = tokens[11];
+
+				result =  insertRecord.run(conn, Integer.parseInt(tokens[1]), value );
+				if (result == 0)
+	                throw new RuntimeException("Error!! Cannot update ycsb_id ="+tokens[1]);
+	            return true;
+			case YCSBConstants.DELETE_QUERY_USERTABLE:
+				result =  deleteRecord.run(conn, Integer.parseInt(tokens[1]));
+				if (result == 0)
+	                throw new RuntimeException("Error!! Cannot delete ycsb_id ="+tokens[1]);
+	            return true;
+		}
 		return false;
 	}
 
 	@Override
 	public CacheEntry applyDelta(Delta delta, CacheEntry cacheEntry) {
 		// TODO Auto-generated method stub
-		return null;
+		 //throw new NotImplementedException("apply delta not implemented");
+		 Object cacheVal = cacheEntry.getValue();
+	        if (cacheVal instanceof HashMap) {
+	            HashMap map = (HashMap)cacheVal;
+	            if (map.size() == 0) {
+	                applyDeltaHashMap(delta, (HashMap<String, String>)cacheVal);    
+	            } else {
+	                Object akey = map.keySet().iterator().next();
+	                if (akey instanceof String) {
+	                    applyDeltaHashMap(delta, (HashMap<String, String>)cacheVal);
+	                } else if (akey instanceof Integer) {
+	                    applyDeltaHashMap2(delta, (HashMap<Integer, Set<Integer>>)cacheVal);
+	                }
+	            }
+	        } else if (cacheVal instanceof List) {
+	            List<Integer> val = (List<Integer>)cacheVal;
+	            Object obj = delta.getValue();
+	            if (obj instanceof Integer) {
+	                switch (delta.getType()) {
+	                case Delta.TYPE_RMW:
+	                    if (val.contains(obj)) {
+	                        val.remove((Integer)obj);
+	                    } else {
+	                        System.out.println("Value of key "+cacheEntry.getKey()+" does not contains "+obj);
+	                    }
+	                    break;
+	                case Delta.TYPE_APPEND:
+	                    if (val.contains((obj))) {
+	                        System.out.println("Value of key "+cacheEntry.getKey()+ " contains "+ obj);
+	                    } else {
+	                            val.add((Integer)obj);
+	                    }
+	                    break;
+	                }
+	            }
+	        }
+	        return cacheEntry;
+		//return null;
 	}
+	
+	private void applyDeltaHashMap2(Delta delta,
+            HashMap<Integer, Set<Integer>> v) {
+        String dVal = (String) delta.getValue();
+        String[] ops = dVal.split(";");
+        int old_o_id = 0;
+        for (String op: ops) {
+            String[] fields = op.split(",");
+            switch (fields[0]) {
+            case ADD:
+                int o_id = Integer.parseInt(fields[2]);
+                int i_id = Integer.parseInt(fields[4]);
+                 Set<Integer> set = v.get(o_id);
+                if (set == null) {
+                    set = new HashSet<>();
+                    v.put(o_id, set);
+                }
+                set.add(i_id);
+                old_o_id = o_id - 20;
+                break;
+            case REMOVE_FIRST:
+                v.remove(old_o_id);
+                break;
+            default:
+                System.out.println("Error: not a delta of type ADD");
+                break;
+            }
+        }
+    }
+
+    private void applyDeltaHashMap(Delta delta, HashMap<String, String> cacheVal) {
+        String dVal = (String) delta.getValue();
+        String[] ops = dVal.split(";");
+        
+        // handle special case where there must be a check on the list of attributes.
+        if (dVal.contains(CHECK)) {
+            for (String op: ops) {
+                if (op.contains(CHECK)) {
+                    String[] fields = op.split(",");
+                    if (fields[0].equals(CHECK)) {
+                        String attr = fields[1];
+                        String val = cacheVal.get(attr);
+                        if (val == null || !val.equals(fields[2])) {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        
+        for (String op: ops) {
+            String[] fields = op.split(",");
+            switch (fields[0]) {
+            case SET:
+                cacheVal.put(fields[1], fields[2]);
+                break;
+//            case INCR:
+//                String val = cacheVal.get(fields[1]);
+//                if (val != null) {
+//                    double d = Double.parseDouble(val);
+//                    double i = Double.parseDouble(fields[2]);
+//                    cacheVal.put(fields[1], String.valueOf(d+i));
+//                }
+//                break;
+//            case INCR_OR_SET:
+//                val = cacheVal.get(fields[1]);
+//                if (val == null) {
+//                    cacheVal.put(fields[1], fields[2]);
+//                } else {
+//                    double d = Double.parseDouble(val);
+//                    double i = Double.parseDouble(fields[2]);
+//                    cacheVal.put(fields[1], String.valueOf(d+i));
+//                }
+            }
+        }
+    }
+
 
 	   @Override
 	    public byte[] serialize(CacheEntry cacheEntry) {
@@ -347,7 +565,7 @@ public class YCSBCacheStore extends CacheStore {
         int offset = 0;
         ByteBuffer buff = ByteBuffer.wrap(bytes);
 		
-	        if(key.startsWith(KEY_USER_NAME_PREFIX)) {
+	        if(key.startsWith(YCSBConstants.MEM_UPDATE_USERTABLE)) {
 	        	Map<String, String> map = new HashMap<>();
 	            while (offset < bytes.length) {
 	                int len = buff.getInt();
@@ -375,16 +593,36 @@ public class YCSBCacheStore extends CacheStore {
 	}
 
 	@Override
-	public byte[] serialize(Delta change) {
+	public byte[] serialize(Delta delta) {
 		// TODO Auto-generated method stub
-		return null;
+        byte[] bytes = null;
+        
+        if (delta.getType() == Delta.TYPE_APPEND) {
+            int x = (int)delta.getValue();
+            ByteBuffer bf = ByteBuffer.allocate(4);
+            bf.putInt(x);
+            bytes = bf.array();
+        }
+        
+        if (delta.getType() == Delta.TYPE_RMW || delta.getType() == Delta.TYPE_SET) {
+            Map<String, String> obj = new HashMap<>();
+            String val = (String)delta.getValue();
+            String[] fields = val.split(";");
+            for (String field: fields) {
+                String[] tokens = field.split(",");
+                obj.put(tokens[1], tokens[2]);
+            }        
+            bytes = serializeHashMap(obj);
+        }
+        return bytes;
+//		throw new UserAbortException("serialize changes error");
 	}
 
 	@Override
 	public int getHashCode(String key) {
 		// TODO Auto-generated method stub
-		return Integer.parseInt(key.split(",")[1]);
-		
+		//return Integer.parseInt(key.split(",")[1]);
+		return 0;
 	}
 
 	@Override
@@ -470,6 +708,13 @@ public class YCSBCacheStore extends CacheStore {
 	        }
 	        assert(pStmt != null) : "Unexpected null PreparedStatement for " + stmt;
 	        return (pStmt);
+	    }
+	    
+	    @Override
+	    public Map<Interval1D, List<Delta>> updatePoints(String dml) {
+	        String[] tokens = dml.split(",");
+	        
+	        throw new NotImplementedException("update points in cachestore");
 	    }
 
 }

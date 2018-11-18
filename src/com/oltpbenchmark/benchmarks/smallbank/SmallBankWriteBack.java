@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -29,14 +30,15 @@ import com.usc.dblab.cafe.Session;
 public class SmallBankWriteBack extends WriteBack {
     public static final String DATA_ITEM_CHECKING = SmallBankConstants.TABLENAME_CHECKING+",%s";
     public static final String DATA_ITEM_SAVINGS = SmallBankConstants.TABLENAME_SAVINGS+",%s";
-
+    public final SQLStmt stmtInsertSessionIds = new SQLStmt("INSERT INTO COMMITED_SESSION VALUES (?)");
+    public final SQLStmt stmtDeleteSessionIds = new SQLStmt("DELETE FROM COMMITED_SESSION WHERE sessid=?");
     private final Connection conn;
 
     private DatabaseType dbType;
     private Map<String, SQLStmt> name_stmt_xref;
     private final Map<SQLStmt, String> stmt_name_xref = new HashMap<SQLStmt, String>();
     private final Map<SQLStmt, PreparedStatement> prepardStatements = new HashMap<SQLStmt, PreparedStatement>();
-
+    private Statement stmt;
     public final SQLStmt UpdateCheckingBalance = new SQLStmt(
             "UPDATE " + SmallBankConstants.TABLENAME_CHECKING + 
             "   SET bal = bal + ? " +
@@ -63,6 +65,101 @@ public class SmallBankWriteBack extends WriteBack {
 
     public SmallBankWriteBack(Connection conn) {
         this.conn = conn;
+        try {
+            this.stmt = conn.createStatement();
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    
+    @Override
+    public boolean createSessionTable() {
+//        if (com.usc.dblab.cafe.Config.storeCommitedSessions) {
+            try {
+                Statement statement = conn.createStatement();
+                statement.execute("DROP TABLE IF EXISTS "
+                        + "COMMITED_SESSION");
+                statement.execute("CREATE TABLE IF NOT EXISTS "
+                        + "COMMITED_SESSION(sessid VARCHAR(50) NOT NULL PRIMARY KEY)");
+                conn.commit();
+                statement.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return false;
+            }            
+//        }
+        
+        return true;
+    }
+    
+    @Override
+    public boolean insertCommitedSessionRows(List<String> sessIds) {
+        if (com.usc.dblab.cafe.Config.storeCommitedSessions) {
+            try {
+                PreparedStatement pStmt = getPreparedStatement(conn, stmtInsertSessionIds);
+                for (String sessId: sessIds) {
+                    pStmt.setString(1, sessId);
+                    pStmt.addBatch();
+                }
+                pStmt.execute();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    @Override
+    public boolean cleanupSessionTable(List<String> sessIds) {
+        if (com.usc.dblab.cafe.Config.storeCommitedSessions) {
+            try {
+                PreparedStatement pStmt = getPreparedStatement(conn, stmtDeleteSessionIds);
+                for (String sessId: sessIds) {
+                    pStmt.setString(1, sessId);
+                    pStmt.addBatch();
+                }
+                pStmt.executeBatch();
+                conn.commit();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    @Override
+    public List<String> checkExists(List<String> toExec) {
+        if (com.usc.dblab.cafe.Config.storeCommitedSessions) {
+            String query = "SELECT sessid FROM COMMITED_SESSION WHERE sessid IN (";
+            for (String sessid: toExec) {
+                query += "'"+sessid+"',";
+            }
+            query = query.substring(0, query.length()-1) + ")";
+            
+            try {
+                ResultSet res = stmt.executeQuery(query);
+                List<String> exists = new ArrayList<>();
+                while (res.next()) {
+                    exists.add(res.getString(1));
+                }
+                res.close();
+                return exists;
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -279,7 +376,7 @@ public class SmallBankWriteBack extends WriteBack {
     	
     	if (buffVals == null || buffVals.size() == 0)
     		return result;
-    	System.out.println("hello");
+//    	System.out.println("hello");
         return result;
     }
 
