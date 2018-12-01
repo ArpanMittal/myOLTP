@@ -26,7 +26,7 @@ public class Warmup {
     static SmallBankBenchmark bench;
     static SmallBankWorker worker;
     static Random rand = new Random();
-    static final int DB_SIZE = 5000;
+    static final int DB_SIZE = 1000000;
     
     public static void main(String[] args) {    
 //        String dbip = "168.62.24.93";
