@@ -92,8 +92,8 @@ public class SmallBankTest {
     
     public static void verifyCacheHit() {
         try {
-            for (int i = 0; i < 1; i++) {
-                procBalance.run(conn, "0000000000000000000000000000000000000000000000000000000000051991", cache, null);
+            for (long i = 10; i <= 20; i++) {
+                procBalance.run(conn, getName(i), cache, null);
             }
             System.out.println(Stats.getAllStats().toString(2));
         } catch (SQLException e) {
@@ -102,26 +102,35 @@ public class SmallBankTest {
         }
     }
     
+    
+    
     public static void verifyDepositChecking() {
         Map<String, Object> tres = new HashMap<String, Object>();
         long id = 4;
         String name = getName(id);
         try {
+        	for(int i =1;i<=10; i++) {
+            	System.out.println(i);
+            	name =  getName(i);
             // on cache misses
-            procBalance.run(conn, name, cache, tres);
-            
-            tres.clear();
-            procDepositChecking.run(conn, name, 125, cache, tres);
-            
-            tres.clear();
-            procBalance.run(conn, name, cache, tres);
-            System.out.println("after update");
-//            // on cache hits
-//            tres.clear();
-            procDepositChecking.run(conn, name, 0.77, cache, tres);
-//            
-            tres.clear();
-            procBalance.run(conn, name, cache, tres);
+	            procBalance.run(conn, name, cache, tres);
+	            
+	            tres.clear();
+	            procDepositChecking.run(conn, name, .5, cache, tres);
+	            
+	            
+	            tres.clear();
+	            System.out.println("after update");
+	            procBalance.run(conn, name, cache, tres);
+	            
+	//            // on cache hits
+	//            tres.clear();
+	            System.out.println("after update");
+	            procDepositChecking.run(conn, name, .5, cache, tres);
+	//            
+	            tres.clear();
+	            procBalance.run(conn, name, cache, tres);
+        	}
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -197,30 +206,34 @@ public class SmallBankTest {
         Map<String, Object> tres = new HashMap<String, Object>();
         long custId0 = rand.nextInt(DB_SIZE);
         long custId1 = rand.nextInt(DB_SIZE);
-        String name1 = getName(custId0);
-        String name2 = getName(custId1);
-        
-        try {
-            if (!cacheHit) {
-                procBalance.run(conn, name1, tres);            
-                tres.clear();
-                procBalance.run(conn, name2, tres);
-            } else {
-                procBalance.run(conn, name1, cache, tres);            
-                tres.clear();
-                procBalance.run(conn, name2, cache, tres);
-            }
-            
-            tres.clear();
-            procAmalgamate.run(conn, custId0, custId1, cache, tres);
-            
-            tres.clear();
-            procBalance.run(conn, name1, cache, tres);
-            tres.clear();
-            procBalance.run(conn, name2, cache, tres);
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        for(int i =10;i<=15; i++) {
+        	System.out.println(i);
+	        String name1 = getName(i);
+	        String name2 = getName(i+5);
+	        
+	        try {
+	            if (!cacheHit) {
+	                procBalance.run(conn, name1, tres);            
+	                tres.clear();
+	                procBalance.run(conn, name2, tres);
+	            } else {
+	                procBalance.run(conn, name1, cache, tres);            
+	                tres.clear();
+	                procBalance.run(conn, name2, cache, tres);
+	            }
+	            
+	            tres.clear();
+	            procAmalgamate.run(conn, i, i+5, cache, tres);
+	            
+	            tres.clear();
+	            System.out.println("After Amalgamate");
+	            procBalance.run(conn, name1, cache, tres);
+	            tres.clear();
+	            procBalance.run(conn, name2, cache, tres);
+	        } catch (SQLException e) {
+	            // TODO Auto-generated catch block
+	            e.printStackTrace();
+	        }
         }
     }
     

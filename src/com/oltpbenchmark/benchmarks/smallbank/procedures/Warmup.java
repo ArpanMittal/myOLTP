@@ -26,17 +26,18 @@ public class Warmup {
     static SmallBankBenchmark bench;
     static SmallBankWorker worker;
     static Random rand = new Random();
-    static final int DB_SIZE = 1000000;
+    static final int DB_SIZE = 5000;
     
     public static void main(String[] args) {    
-        String dbip = "168.62.24.93";
-        
+//        String dbip = "168.62.24.93";
         String[] caches = null;
-//        if (args.length >=2)
-//            caches = args[1].split(",");
-//        String dbip = args[2];
-//		String dbname = args[3];
-//		String dbpass = args[4];
+//        String[] caches = {"168.62.24.93:11211"};
+        //caches = "168.62.24.93:11211";
+        if (args.length >=2)
+            caches = args[1].split(",");
+        String dbip = args[2];
+		String dbname = args[3];
+		String dbpass = args[4];
         if (caches != null) {
             cacheConnectionPool = SockIOPool.getInstance(Config.CACHE_POOL_NAME);
             cacheConnectionPool.setServers(caches);

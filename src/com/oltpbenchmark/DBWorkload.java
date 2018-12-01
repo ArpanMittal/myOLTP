@@ -358,8 +358,8 @@ public class DBWorkload {
         }
         //TODO: remove this change
 //        if (Config.CAFE && TPCCConfig.warmup) {
-        if (Config.CAFE) {
-        //if(Config.CAFE && false) {
+        //if (Config.CAFE &&(TPCCConfig.warmup ||SMALLBANKCONFIG.)) {
+        if(Config.CAFE && false) {
             System.out.println("Load cache");
             String[] tokens = new String[10];
             tokens[0] = scaleFactor+"";
