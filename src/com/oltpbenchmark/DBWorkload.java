@@ -48,6 +48,8 @@ import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.TransactionTypes;
 import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.Config;
+import com.oltpbenchmark.benchmarks.smallbank.procedures.ReadOnly_SmallBank;
+import com.oltpbenchmark.benchmarks.smallbank.procedures.Warmup;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCConfig;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.ReadOnly;
 import com.oltpbenchmark.types.DatabaseType;
@@ -354,9 +356,10 @@ public class DBWorkload {
         if (argsLine.hasOption("maxwhid")) {
             maxw = Integer.parseInt(argsLine.getOptionValue("maxwhid"));
         }
-        //TODO: remove this cjange
+        //TODO: remove this change
 //        if (Config.CAFE && TPCCConfig.warmup) {
-        if(Config.CAFE && false) {
+        if (Config.CAFE) {
+        //if(Config.CAFE && false) {
             System.out.println("Load cache");
             String[] tokens = new String[10];
             tokens[0] = scaleFactor+"";
@@ -370,7 +373,9 @@ public class DBWorkload {
             tokens[7] = TPCCConfig.configDistPerWhse+"";
             tokens[8] = TPCCConfig.configCustPerDist+"";
             tokens[9] = "true";
-            ReadOnly.main(tokens);
+            //ReadOnly_SmallBank.main(tokens);
+            Warmup.main(tokens);
+            //ReadOnly.main(tokens);
         }
         
         if (argsLine.hasOption("storesess")) {

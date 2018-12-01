@@ -153,5 +153,5 @@ public final class TPCCConfig {
     public static final boolean useRangeQC = true;
     public static final boolean crossWarehouse = false;
     
-    public static boolean warmup=false;
+    public static boolean warmup=true;
 }

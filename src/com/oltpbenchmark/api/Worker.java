@@ -411,10 +411,26 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                 ((TPCCWorker)this).cafe.aggregateStats(totalStats);
                 semaphore.release();
             }
+            
+            if (this instanceof SmallBankWorker) {
+                try {
+                    semaphore.acquire();
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                ((SmallBankWorker)this).cafe.aggregateStats(totalStats);
+                semaphore.release();
+            }
 
             if (this instanceof TPCCWorker) {
                 System.out.println("# Transactions for Worker " + id + " " + ((TPCCWorker)this).transactionCount);
             }
+            
+            if (this instanceof SmallBankWorker) {
+                System.out.println("# Transactions for Worker " + id + " " + ((SmallBankWorker)this).transactionCount);
+            }
+            
         }        
 
         if (completed.incrementAndGet() == getNumWorkers()) {
@@ -450,6 +466,8 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                 if (Config.CAFE) {
                     if (this instanceof TPCCWorker) {
                         ((TPCCWorker) this).cafe.prettyPrint(totalStats);
+                    }else if (this instanceof SmallBankWorker) {
+                        ((SmallBankWorker)this).cafe.prettyPrint(totalStats);
                     }
                 }
             } catch (Exception e) {

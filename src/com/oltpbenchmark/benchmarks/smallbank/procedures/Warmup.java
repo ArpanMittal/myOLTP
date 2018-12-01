@@ -26,15 +26,17 @@ public class Warmup {
     static SmallBankBenchmark bench;
     static SmallBankWorker worker;
     static Random rand = new Random();
-    static final int DB_SIZE = 320000;
+    static final int DB_SIZE = 1000000;
     
     public static void main(String[] args) {    
         String dbip = "168.62.24.93";
         
         String[] caches = null;
-        if (args.length >=2)
-            caches = args[1].split(",");
-        
+//        if (args.length >=2)
+//            caches = args[1].split(",");
+//        String dbip = args[2];
+//		String dbname = args[3];
+//		String dbpass = args[4];
         if (caches != null) {
             cacheConnectionPool = SockIOPool.getInstance(Config.CACHE_POOL_NAME);
             cacheConnectionPool.setServers(caches);
@@ -84,9 +86,11 @@ class WarmupThread extends Thread {
     
     public WarmupThread(int start, int end, String dbip, String[] caches) {
         try {
+//            conn = DriverManager.getConnection(
+//                    "jdbc:mysql://168.62.24.93:3306/smallbank?serverTimezone=UTC&amp;useSSL=false&amp;rewriteBatchedStatements=true", 
+//                    "user", "123456");
             conn = DriverManager.getConnection(
-                    "jdbc:mysql://168.62.24.93:3306/smallbank?serverTimezone=UTC&amp;useSSL=false&amp;rewriteBatchedStatements=true", 
-                    "user", "123456");
+					"jdbc:mysql://168.62.24.93:3306/smallbank?serverTimezone=UTC&useSSL=false","user" , "123456");
             conn.setAutoCommit(false);
         } catch (SQLException e) {
             // TODO Auto-generated catch block

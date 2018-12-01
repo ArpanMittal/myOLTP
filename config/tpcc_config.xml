@@ -11,13 +11,13 @@
     <cafe>true</cafe>
     <logging>true</logging>
     <cachepolicy>WRITE_BACK</cachepolicy>
-    <uploadUrl>/home/hieun/Desktop/tpcc</uploadUrl>
+    <!--  <uploadUrl>/home/hieun/Desktop/tpcc</uploadUrl> -->
     
     <!-- Scale factor is the number of warehouses in TPCC -->
     <scalefactor>1</scalefactor>
     
     <!-- The workload -->
-    <terminals>1000</terminals>
+    <terminals>10</terminals>
     <works>
         <work>
           <time>300</time>

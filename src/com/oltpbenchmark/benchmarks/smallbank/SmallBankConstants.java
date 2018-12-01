@@ -45,7 +45,7 @@ public abstract class SmallBankConstants {
     
     // Default number of customers in bank
     public static final int NUM_ACCOUNTS            = 1000000;
-    
+    //public static final int NUM_ACCOUNTS            = 500;
     public static final boolean HOTSPOT_USE_FIXED_SIZE  = false;
     public static final double HOTSPOT_PERCENTAGE       = 25; // [0% - 100%]
     public static final int HOTSPOT_FIXED_SIZE          = 100; // fixed number of tuples

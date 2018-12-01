@@ -5,7 +5,7 @@ import com.usc.dblab.cafe.CachePolicy;
 public class Config {
     public static final String CACHE_POOL_NAME = "oltpbench";
     public static boolean ENABLE_LOGGING = false;
-    public static boolean CAFE = false;
+    public static boolean CAFE = true;
     public static String[] cacheServers = new String[] { "168.62.24.93:11211" };
 
     public static boolean DEBUG = false;

@@ -71,28 +71,28 @@ public class SmallBankTest {
         System.out.println(getName(1));
         System.out.println(getName(322));
         System.out.println(getName(1123));
-        
-        System.out.println("====== Verify DepositChecking");
-        verifyDepositChecking();
-        System.out.println("====== Verify WriteCheck");
-        verifyWriteCheck();
-        System.out.println("====== Verify TransactSavings");
-        verifyTransactSavings();
-        
-        System.out.println("====== Verify Amalgamate");
-        verifyAmalgamate(false);
-        System.out.println("-------------------------");
-        verifyAmalgamate(true);
-        
-        System.out.println("====== Verify Send Payment");
-        verifySendPayment(false);
-        System.out.println("-------------------------");
-        verifySendPayment(true);     
+        verifyCacheHit();
+//        System.out.println("====== Verify DepositChecking");
+//        verifyDepositChecking();
+//        System.out.println("====== Verify WriteCheck");
+//        verifyWriteCheck();
+//        System.out.println("====== Verify TransactSavings");
+//        verifyTransactSavings();
+//        
+//        System.out.println("====== Verify Amalgamate");
+//        verifyAmalgamate(false);
+//        System.out.println("-------------------------");
+//        verifyAmalgamate(true);
+//        
+//        System.out.println("====== Verify Send Payment");
+//        verifySendPayment(false);
+//        System.out.println("-------------------------");
+//        verifySendPayment(true);     
     }
     
     public static void verifyCacheHit() {
         try {
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 1; i++) {
                 procBalance.run(conn, "0000000000000000000000000000000000000000000000000000000000051991", cache, null);
             }
             System.out.println(Stats.getAllStats().toString(2));
@@ -113,11 +113,11 @@ public class SmallBankTest {
             tres.clear();
             procDepositChecking.run(conn, name, 125, cache, tres);
             
-            //tres.clear();
-//            procBalance.run(conn, name, cache, tres);
-//            
-//            // on cache hits
             tres.clear();
+            procBalance.run(conn, name, cache, tres);
+            System.out.println("after update");
+//            // on cache hits
+//            tres.clear();
             procDepositChecking.run(conn, name, 0.77, cache, tres);
 //            
             tres.clear();

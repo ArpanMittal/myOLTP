@@ -215,6 +215,7 @@ public class RandomDistribution {
                 val = bits % (this.range_size - 1);
             } while (bits - val + (this.range_size - 1) < 0L);
             val += this.min;
+            
             assert(val >= min);
             assert(val < max);
             return val;

@@ -17,7 +17,7 @@
     <scalefactor>1</scalefactor>
     
     <!-- The workload -->
-    <terminals>1000</terminals>
+    <terminals>10</terminals>
     <works>
         <work>
           <time>100</time>

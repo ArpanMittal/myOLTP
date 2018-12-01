@@ -62,7 +62,7 @@ public class SmallBankWorker extends Worker<SmallBankBenchmark> {
     
     private int threadId;
     private int sequenceId = 0;
-    
+    public int transactionCount = 0;
     public HashMap<String, Object> transactionResults = null;
     public BufferedWriter updateLogAll = null;
     public BufferedWriter readLogAll = null;
@@ -162,6 +162,7 @@ public class SmallBankWorker extends Worker<SmallBankBenchmark> {
             this.generateCustIds(true);
             if (Config.CAFE) {
                 this.procAmalgamate.run(conn, this.custIdsBuffer[0], this.custIdsBuffer[1], this.cafe, this.transactionResults);
+                transactionCount++;
             } else {
                 this.procAmalgamate.run(conn, this.custIdsBuffer[0], this.custIdsBuffer[1], this.transactionResults);
             }
@@ -172,6 +173,7 @@ public class SmallBankWorker extends Worker<SmallBankBenchmark> {
             String custName = String.format(this.custNameFormat, this.custIdsBuffer[0]);
             if (Config.CAFE) {
                 this.procBalance.run(conn, custName, this.cafe, this.transactionResults);
+                transactionCount++;
             } else {
                 this.procBalance.run(conn, custName, this.transactionResults);
             }
@@ -182,6 +184,7 @@ public class SmallBankWorker extends Worker<SmallBankBenchmark> {
             String custName = String.format(this.custNameFormat, this.custIdsBuffer[0]);
             if (Config.CAFE) {
                 this.procDepositChecking.run(conn, custName, SmallBankConstants.PARAM_DEPOSIT_CHECKING_AMOUNT, this.cafe, this.transactionResults);
+                transactionCount++;
             } else {
                 this.procDepositChecking.run(conn, custName, SmallBankConstants.PARAM_DEPOSIT_CHECKING_AMOUNT, this.transactionResults);
             }
@@ -203,6 +206,7 @@ public class SmallBankWorker extends Worker<SmallBankBenchmark> {
             String custName = String.format(this.custNameFormat, this.custIdsBuffer[0]);
             if (Config.CAFE) {
                 this.procTransactSavings.run(conn, custName, SmallBankConstants.PARAM_TRANSACT_SAVINGS_AMOUNT, this.cafe, this.transactionResults);
+                transactionCount++;
             } else {
                 this.procTransactSavings.run(conn, custName, SmallBankConstants.PARAM_TRANSACT_SAVINGS_AMOUNT, this.transactionResults);
             }
@@ -213,7 +217,7 @@ public class SmallBankWorker extends Worker<SmallBankBenchmark> {
             String custName = String.format(this.custNameFormat, this.custIdsBuffer[0]);
             if (Config.CAFE) {
                 this.procWriteCheck.run(conn, custName, SmallBankConstants.PARAM_WRITE_CHECK_AMOUNT, this.cafe, this.transactionResults);
-
+                transactionCount++;
             } else {
                 this.procWriteCheck.run(conn, custName, SmallBankConstants.PARAM_WRITE_CHECK_AMOUNT, this.transactionResults);
             }
