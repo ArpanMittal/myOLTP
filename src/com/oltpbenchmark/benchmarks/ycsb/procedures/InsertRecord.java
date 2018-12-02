@@ -52,9 +52,20 @@ public class InsertRecord extends Procedure {
     			boolean success = cafe.writeStatement(insertRecord);
     	        assert(success) :
     	            String.format("Failed to insert %s for customer #%s", YCSBConstants.INSERT_QUERY_USERTABLE, keyname);			
+//    			
+//    			conn.commit();
+//    			cafe.commitSession();
     			
-    			conn.commit();
-    			cafe.commitSession();
+    			   if (cafe.validateSession()) {
+                       conn.commit();
+                       cafe.commitSession();
+                   } else {
+                       conn.rollback();
+                       cafe.abortSession();
+                   }
+       			
+       			
+//       			break;
     			
     			
     			break;

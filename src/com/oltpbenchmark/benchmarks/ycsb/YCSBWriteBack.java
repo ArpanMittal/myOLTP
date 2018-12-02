@@ -82,7 +82,8 @@ public class YCSBWriteBack extends WriteBack {
 	@Override
 	public LinkedHashMap<String, Change> bufferChanges(String dml, Set<String> buffKeys) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException("bufferchanges");
+		//return null;
 	}
 
 	@Override
@@ -128,7 +129,7 @@ public class YCSBWriteBack extends WriteBack {
         switch (tokens[0]) {
         	case YCSBConstants.UPDATE_QUERY_USERTABLE:
         		String s = String.format("%s,o_field1,%s;%s,o_field2,%s;%s,o_field3,%s;%s,o_field4,%s;%s,o_field5,%s;%s,o_field6,%s;%s,o_field7,%s;%s,o_field8,%s;%s,o_field9,%s;%s,o_field10,%s", SET, tokens[2], SET, tokens[3],SET, tokens[4],SET, tokens[5], SET, tokens[6], SET, tokens[7], SET, tokens[8],SET, tokens[9], SET, tokens[10], SET, tokens[11]);
-        		c = new Change(Change.TYPE_RMW,s);
+        		c = new Change(Change.TYPE_SET,s);
                 it = String.format(YCSBConstants.WB_UPDATE_USERTABLE_KEY, tokens[1]);
                 break;
         	case YCSBConstants.INSERT_QUERY_USERTABLE:
@@ -152,8 +153,8 @@ public class YCSBWriteBack extends WriteBack {
 	@Override
 	public byte[] serialize(Change change) {
 		// TODO Auto-generated method stub
-		 if (change.getType() != Change.TYPE_RMW)
-	            throw new NotImplementedException("Should not have change of type different than RMW");
+//		 if (change.getType() != Change.TYPE_APPEND || change.getType() != Change.TYPE_RMW)
+//	            throw new NotImplementedException("Should not have change of type different than RMW");
 	        int len = 0;
 //	        String sid = change.getSid();
 //	        len += 4+sid.length();
@@ -189,7 +190,7 @@ public class YCSBWriteBack extends WriteBack {
       byte[] bs = new byte[len];
       buff.get(bs);
       String val = new String(bs);
-      Change change = new Change(Change.TYPE_RMW, val);
+      Change change = new Change(Change.TYPE_APPEND, val);
 //      change.setSid(sid);
 //      change.setSequenceId(seqId);
       return change;
@@ -208,14 +209,30 @@ public class YCSBWriteBack extends WriteBack {
 	                String val = mergeMap.get(identifier);
 	                if (val == null) {
 	                    mergeMap.put(identifier, (String)change.getValue());
+	                }else {
+	                	mergeMap.put(identifier, (String)change.getValue());
 	                }
 	            }
-	            for (String it: mergeMap.keySet()) {
-	            	
-	            }
-	            throw new NotImplementedException("applySessions_inside sessions");
 		 }
-		throw new NotImplementedException("applySessions");
+		
+		
+        PreparedStatement prepStmt = null;
+        for (String it: mergeMap.keySet()) {
+            String val = mergeMap.get(it);
+//            char op = val.charAt(0);
+//            double amount = Double.parseDouble(val.substring(1));
+
+            String[] tokens = it.split(",");
+            String table = tokens[0];
+            System.out.println("apply sessions pending");
+        }
+        //conn.commit();
+
+        return true;
+		
+		
+		
+		//throw new NotImplementedException("applySessions");
 		// TODO Auto-generated method stub
 		//return false;
 	}
@@ -223,6 +240,7 @@ public class YCSBWriteBack extends WriteBack {
 	@Override
 	public QueryResult merge(String query, QueryResult result, LinkedHashMap<String, List<Change>> buffVals) {
 		// TODO Auto-generated method stub
+//		System.out.println("Inside merge");
 		if (buffVals == null || buffVals.size() == 0) 
 			return result;
 		
@@ -267,7 +285,31 @@ public class YCSBWriteBack extends WriteBack {
 			                        }
 			                        break;
 			                    case INSERT:
-			                    	throw new NotImplementedException("implement insert in merge");
+			                    	if (tokens[1].equals("o_field1")) {
+			                        	userResult.setField_01(tokens[2]);
+			                        } else if (tokens[1].equals("o_field2")) {
+			                        	userResult.setField_02(tokens[2]);
+			                        }else if (tokens[1].equals("o_field3")) {
+			                        	userResult.setField_03(tokens[2]);
+			                        }else if (tokens[1].equals("o_field4")) {
+			                        	userResult.setField_04(tokens[2]);
+			                        }else if (tokens[1].equals("o_field5")) {
+			                        	userResult.setField_05(tokens[2]);
+			                        }else if (tokens[1].equals("o_field5")) {
+			                        	userResult.setField_05(tokens[2]);
+			                        }else if (tokens[1].equals("o_field6")) {
+			                        	userResult.setField_06(tokens[2]);
+			                        }else if (tokens[1].equals("o_field7")) {
+			                        	userResult.setField_07(tokens[2]);
+			                        }else if (tokens[1].equals("o_field8")) {
+			                        	userResult.setField_08(tokens[2]);
+			                        }else if (tokens[1].equals("o_field9")) {
+			                        	userResult.setField_09(tokens[2]);
+			                        }else if (tokens[1].equals("o_field10")) {
+			                        	userResult.setField_10(tokens[2]);
+			                        }
+			                    	break;
+//			                    	throw new NotImplementedException("implement insert in merge");
 			                        
 			                    }                    
 			                }

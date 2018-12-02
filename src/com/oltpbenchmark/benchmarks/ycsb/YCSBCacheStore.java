@@ -106,7 +106,7 @@ public class YCSBCacheStore extends CacheStore {
         default:
 	        s = String.format("%s,o_field1,%s;%s,o_field2,%s;%s,o_field3,%s;%s,o_field4,%s;%s,o_field5,%s;%s,o_field6,%s;%s,o_field7,%s;%s,o_field8,%s;%s,o_field9,%s;%s,o_field10,%s", SET, tokens[2], SET, tokens[3],SET, tokens[4],SET, tokens[5], SET, tokens[6], SET, tokens[7], SET, tokens[8],SET, tokens[9], SET, tokens[10], SET, tokens[11]);
 	        
-	        d = new Delta(Change.TYPE_RMW, s);
+	        d = new Delta(Change.TYPE_SET, s);
 	        map.put(String.format(YCSBConstants.MEM_UPDATE_USERTABLE_KEY, tokens[1]), d);  
         }
         
@@ -658,17 +658,17 @@ public class YCSBCacheStore extends CacheStore {
 	        
 	        switch (tokens[0]) {
 	        case YCSBConstants.QUERY_USERTABLE:
-	        	int id = Integer.parseInt(map1.get("u_id"));
-                String field1 = map1.get("u_field1");
-                String field2 = map1.get("u_field2");
-                String field3  = map1.get("u_field3");
-                String field4  = map1.get("u_field4");
-                String field5 = map1.get("u_field5");
-                String field6 = map1.get("u_field6");
-                String field7 = map1.get("u_field7");
-                String field8 = map1.get("u_field8");
-                String field9 = map1.get("u_field9");
-                String field10 = map1.get("u_field10");
+	        	int id = Integer.parseInt(tokens[1]);
+                String field1 = map1.get("o_field1");
+                String field2 = map1.get("o_field2");
+                String field3  = map1.get("o_field3");
+                String field4  = map1.get("o_field4");
+                String field5 = map1.get("o_field5");
+                String field6 = map1.get("o_field6");
+                String field7 = map1.get("o_field7");
+                String field8 = map1.get("o_field8");
+                String field9 = map1.get("o_field9");
+                String field10 = map1.get("o_field10");
                 return new UserResult(query,id, field1, field2,field3, field4, field5, field6, field7, field8, field9, field10);
 	        }
 		return null;
