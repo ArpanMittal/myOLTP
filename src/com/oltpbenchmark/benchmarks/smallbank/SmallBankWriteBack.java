@@ -24,6 +24,9 @@ import com.usc.dblab.cafe.Change;
 import com.usc.dblab.cafe.Config;
 import com.usc.dblab.cafe.Stats;
 import com.usc.dblab.cafe.WriteBack;
+
+import edu.usc.dblab.intervaltree.Interval1D;
+
 import com.usc.dblab.cafe.QueryResult;
 import com.usc.dblab.cafe.Session;
 
@@ -160,6 +163,30 @@ public class SmallBankWriteBack extends WriteBack {
         } else {
             return null;
         }
+    }
+    //For rangeqc only
+    @Override
+    public Map<Interval1D, String> getImpactedRanges(Session sess) {
+//        List<Change> changes = sess.getChanges();
+        Map<Interval1D, String> res = new HashMap<>();
+//        for (Change c: changes) {
+//            String str = (String)c.getValue();
+//            if (str.contains("S_QUANTITY")) {
+//                String[] fs = str.split(";");
+//                for (String f: fs) {
+//                    if (f.contains("S_QUANTITY")) {
+//                        fs = f.split(",");
+//                        int p1 = Integer.parseInt(fs[2]);
+//                        res.put(new Interval1D(p1, p1), sess.getSid());
+//                        int p2 = Integer.parseInt(fs[3]);
+//                        res.put(new Interval1D(p2, p2), sess.getSid());
+//                        return res;
+//                    }
+//                }
+//            }
+//        }
+        
+        return res;
     }
 
     @Override
@@ -331,7 +358,7 @@ public class SmallBankWriteBack extends WriteBack {
                 assert(status == 1);
             }
         }
-        //conn.commit();
+        conn.commit();
 
         return true;
     }

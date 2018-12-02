@@ -73,7 +73,7 @@ public class SmallBankTest {
         System.out.println(getName(1123));
 //        verifyCacheHit();
 //        System.out.println("====== Verify DepositChecking");
-        //verifyDepositChecking();
+//        verifyDepositChecking();
 //        System.out.println("====== Verify WriteCheck");
 //        verifyWriteCheck();
 //        System.out.println("====== Verify TransactSavings");
