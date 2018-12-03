@@ -22,6 +22,7 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.oltpbenchmark.api.SQLStmt;
 import com.oltpbenchmark.benchmarks.smallbank.SmallBankConstants;
+import com.oltpbenchmark.benchmarks.ycsb.procedures.UpdateRecord;
 import com.oltpbenchmark.benchmarks.ycsb.results.UserResult;
 import com.oltpbenchmark.jdbc.AutoIncrementPreparedStatement;
 import com.oltpbenchmark.types.DatabaseType;
@@ -30,6 +31,8 @@ import com.usc.dblab.cafe.QueryResult;
 import com.usc.dblab.cafe.Session;
 import com.usc.dblab.cafe.Stats;
 import com.usc.dblab.cafe.WriteBack;
+
+import edu.usc.dblab.intervaltree.Interval1D;
 
 import static com.oltpbenchmark.benchmarks.tpcc.TPCCConfig.DML_DELETE_NEW_ORDER_PRE;
 import static com.oltpbenchmark.benchmarks.tpcc.TPCCConstants.DATA_ITEM_DISTRICT;
@@ -49,6 +52,7 @@ public class YCSBWriteBack extends WriteBack {
     private static final String SET = "S";
     private static final String INCR = "A";
     private static final String DELETE = "D";
+    final static UpdateRecord updateRecord = new UpdateRecord();
     private Statement stmt;
 	private final Connection conn;
 
@@ -196,6 +200,30 @@ public class YCSBWriteBack extends WriteBack {
       return change;
 		
 	}
+	
+	@Override
+    public Map<Interval1D, String> getImpactedRanges(Session sess) {
+//        List<Change> changes = sess.getChanges();
+        Map<Interval1D, String> res = new HashMap<>();
+//        for (Change c: changes) {
+//            String str = (String)c.getValue();
+//            if (str.contains("S_QUANTITY")) {
+//                String[] fs = str.split(";");
+//                for (String f: fs) {
+//                    if (f.contains("S_QUANTITY")) {
+//                        fs = f.split(",");
+//                        int p1 = Integer.parseInt(fs[2]);
+//                        res.put(new Interval1D(p1, p1), sess.getSid());
+//                        int p2 = Integer.parseInt(fs[3]);
+//                        res.put(new Interval1D(p2, p2), sess.getSid());
+//                        return res;
+//                    }
+//                }
+//            }
+//        }
+        
+        return res;
+    }
 
 	@Override
 	public boolean applySessions(List<Session> sessions, Connection conn, Statement stmt, PrintWriter sessionWriter,
@@ -222,11 +250,35 @@ public class YCSBWriteBack extends WriteBack {
 //            char op = val.charAt(0);
 //            double amount = Double.parseDouble(val.substring(1));
 
-            String[] tokens = it.split(",");
-            String table = tokens[0];
-            System.out.println("apply sessions pending");
+            String[] token2 = it.split(",");
+            String table = token2[0];
+            switch (table) {
+            	case YCSBConstants.WB_UPDATE_USERTABLE:{
+            		String[] tokens = val.split(",");
+            		String[] value = new String[10];
+            		//value[0] = token2[1];
+    				value[0] = tokens[2].split(";")[0];
+    				value[1] = tokens[4].split(";")[0];
+    				value[2] = tokens[6].split(";")[0];
+    				value[3] = tokens[8].split(";")[0];
+    				value[4] = tokens[10].split(";")[0];
+    				value[5] = tokens[12].split(";")[0];
+    				value[6] = tokens[14].split(";")[0];
+    				value[7] = tokens[16].split(";")[0];
+    				value[8] = tokens[18].split(";")[0];
+    				value[9] = tokens[20];
+
+    				int result = updateRecord.run(conn, Integer.parseInt(token2[1]), value );
+    				if (result == 0)
+    	                throw new RuntimeException("Error!! Cannot update ycsb_id ="+tokens[1]);
+    				break;
+    	            //return true;
+            	}
+            		
+            }
+//            System.out.println("apply sessions completed");
         }
-        //conn.commit();
+        conn.commit();
 
         return true;
 		
@@ -255,7 +307,7 @@ public class YCSBWriteBack extends WriteBack {
 					  for (Change c: changes) {
 			                String val = (String)c.getValue();                
 			                String[] fs = val.split(";");
-			                //String[] fs = val.split(";");
+			              
 			                for (String f: fs) {
 			                    tokens = f.split(",");
 			                    switch (tokens[0]) {
@@ -333,9 +385,6 @@ public class YCSBWriteBack extends WriteBack {
 //					  }
 			}
 			return result;
-//			throw new NotImplementedException("implement merge");
-		
-//		return null;
 	}
 
 	@Override
@@ -377,9 +426,6 @@ public class YCSBWriteBack extends WriteBack {
         }
 
         return buff.array();
-		
-//		throw new NotImplementedException("serializeSessionChanges");
-		//return null;
 	}
 
 	@Override
@@ -421,8 +467,7 @@ public class YCSBWriteBack extends WriteBack {
         }
 
         return changesMap;
-		//throw new NotImplementedException("deserializeSessionChanges");
-		//return null;
+		
 	}
 	
 	@Override

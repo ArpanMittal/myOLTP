@@ -61,17 +61,17 @@ public class YCSBTest {
         WriteBack cacheBack = new YCSBWriteBack(conn);
         
         cache = new NgCache(cacheStore, cacheBack, 
-                Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK, 0, Stats.getStatsInstance(0), "jdbc:mysql://168.62.24.93:3306/ycsb?serverTimezone=UTC", 
+                Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK, 1, Stats.getStatsInstance(0), "jdbc:mysql://168.62.24.93:3306/ycsb?serverTimezone=UTC", 
                 "user", "123456", false, 0, 0, 1); 
         
-        verifyCacheHit();
+        //verifyCacheHit();
  
     }
 	
 	   public static void verifyCacheHit() {
 	        try {
 	        	String results[] = new String[20];
-	            for (int i = 500; i <501; i++) {
+	            for (int i = 1; i <2; i++) {
 	            	//readRecord.run(conn, 2, results);
 	                //readRecord.run(conn, "10", cache);
 	                String[] val = {"101","22","23","24","25","26","27","28","29","21"};

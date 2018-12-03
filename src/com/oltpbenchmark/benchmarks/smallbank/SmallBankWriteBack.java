@@ -400,7 +400,7 @@ public class SmallBankWriteBack extends WriteBack {
     @Override
     public QueryResult merge(String query, QueryResult result,
             LinkedHashMap<String, List<Change>> buffVals) {
-    	System.out.println("hello inside merge");
+    	//System.out.println("hello inside merge");
     	if (buffVals == null || buffVals.size() == 0)
     		return result;
 //    	
