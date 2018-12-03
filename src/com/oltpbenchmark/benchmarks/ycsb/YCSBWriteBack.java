@@ -22,6 +22,7 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.oltpbenchmark.api.SQLStmt;
 import com.oltpbenchmark.benchmarks.smallbank.SmallBankConstants;
+import com.oltpbenchmark.benchmarks.ycsb.procedures.DeleteRecord;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.InsertRecord;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.UpdateRecord;
 import com.oltpbenchmark.benchmarks.ycsb.results.UserResult;
@@ -55,6 +56,7 @@ public class YCSBWriteBack extends WriteBack {
     private static final String DELETE = "D";
     final static UpdateRecord updateRecord = new UpdateRecord();
     final static InsertRecord insertRecord= new InsertRecord(); 
+    final static DeleteRecord deleteRecord = new DeleteRecord();
     private Statement stmt;
 	private final Connection conn;
 
@@ -149,9 +151,9 @@ public class YCSBWriteBack extends WriteBack {
         	case YCSBConstants.DELETE_QUERY_USERTABLE:
         		//String s2 = String.format(DELETE+"o_field1,%s;o_field2,%s;o_field3,%s;o_field4,%s;o_field5,%s;o_field6,%s;o_field7,%s;o_field8,%s;o_field9,%s;o_field10,%s", SET, tokens[2], SET, tokens[3],SET, tokens[4],SET, tokens[5], SET, tokens[6], SET, tokens[7], SET, tokens[8],SET, tokens[9], SET, tokens[10], SET, tokens[11]);
 //        		String s2 = String.format(DELETE+"%s,o_field1,%s;o_field2,%s;o_field3,%s;o_field4,%s;o_field5,%s;o_field6,%s;o_field7,%s;o_field8,%s;o_field9,%s;o_field10,%s", SET, null, SET, null,SET, null,SET, null, SET, null, SET, null, SET, null,SET, null, SET, null, SET, null);
-        		String s2 = String.format(DELETE+"%s,o_field1,%s;%s,o_field2,%s;%s,o_field3,%s;%s,o_field4,%s;%s,o_field5,%s;%s,o_field6,%s;%s,o_field7,%s;%s,o_field8,%s;%s,o_field9,%s;%s,o_field10,%s", SET, tokens[2], SET, tokens[3],SET, tokens[4],SET, tokens[5], SET, tokens[6], SET, tokens[7], SET, tokens[8],SET, tokens[9], SET, tokens[10], SET, tokens[11]);
+        		String s2 = String.format(DELETE+"%s,o_field1,%s;%s,o_field2,%s;%s,o_field3,%s;%s,o_field4,%s;%s,o_field5,%s;%s,o_field6,%s;%s,o_field7,%s;%s,o_field8,%s;%s,o_field9,%s;%s,o_field10,%s", SET, null, SET, null,SET, null,SET, null, SET, null, SET, null, SET,null,SET, null, SET, null, SET, null);
         		
-        		c = new Change(Change.TYPE_RMW,s2);
+        		c = new Change(Change.TYPE_SET,s2);
                 it = String.format(YCSBConstants.WB_UPDATE_USERTABLE_KEY, tokens[1]);
                 break;
         }
@@ -275,15 +277,21 @@ public class YCSBWriteBack extends WriteBack {
     				value[8] = tokens[18].split(";")[0];
     				value[9] = tokens[20];
     				int result =0;
-    				if(tokens[0].charAt(0)=='I') {
+    				if(tokens[0].contains(INSERT)) {
     					result = insertRecord.run(conn, Integer.parseInt(token2[1]), value );
         				if (result == 0)
-        	                throw new RuntimeException("Error!! Cannot update ycsb_id ="+tokens[1]);
+        	                throw new RuntimeException("Error!! Cannot insert ycsb_id ="+token2[1]);
         				break;
-    				}else {
+    				}else if(tokens[0].contains(DELETE)) {
+    					result =  deleteRecord.run(conn, Integer.parseInt(token2[1]));
+    					if (result == 0)
+    		                throw new RuntimeException("Error!! Cannot delete ycsb_id ="+token2[1]);
+    		            return true;
+    				}
+    				else {
     					result = updateRecord.run(conn, Integer.parseInt(token2[1]), value );
     					if (result == 0)
-    	                throw new RuntimeException("Error!! Cannot update ycsb_id ="+tokens[1]);
+    	                throw new RuntimeException("Error!! Cannot update ycsb_id ="+token2[1]);
     				}
     				break;
             	}
@@ -345,6 +353,9 @@ public class YCSBWriteBack extends WriteBack {
 			              
 			                for (String f: fs) {
 			                    tokens = f.split(",");
+			                    // if contains set operation just do set
+			                    if(tokens[0].contains(SET))
+			                    	tokens[0] = SET;
 			                    switch (tokens[0]) {
 			                    case SET:
 			                        if (tokens[1].equals("o_field1")) {

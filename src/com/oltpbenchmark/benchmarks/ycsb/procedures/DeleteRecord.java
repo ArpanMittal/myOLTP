@@ -54,8 +54,15 @@ public class DeleteRecord extends Procedure{
                    
                     throw new UserAbortException(" delete failed (not running with SERIALIZABLE isolation?)"+keyname);
                 }
-                conn.commit();
-                cafe.commitSession();
+//                conn.commit();
+//                cafe.commitSession();
+                if (cafe.validateSession()) {
+                    conn.commit();
+                    cafe.commitSession();
+                } else {
+                    conn.rollback();
+                    cafe.abortSession();
+                }
             }catch (Exception e) {
                 //                e.printStackTrace(System.out);
                 try {
