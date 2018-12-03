@@ -90,14 +90,18 @@ public class ReadModifyWriteRecord extends Procedure {
     			
     			
     			
-    			String updateCheckingBalance = String.format(YCSBConstants.UPDATE_QUERY_KEY,keyName,value[0],value[1],value[2],value[3],value[4],value[5],value[6],value[7],value[8],value[9]);
-    			boolean success = cafe.writeStatement(updateCheckingBalance);
+    			String updateQuery = String.format(YCSBConstants.UPDATE_QUERY_KEY,keyName,value[0],value[1],value[2],value[3],value[4],value[5],value[6],value[7],value[8],value[9]);
+    			boolean success = cafe.writeStatement(updateQuery);
     	        assert(success) :
     	            String.format("Failed to update %s for customer #%s", YCSBConstants.UPDATE_QUERY_USERTABLE, keyName);			
     			
-    			conn.commit();
-    			cafe.commitSession();
-    			
+    	        if (cafe.validateSession()) {
+                    conn.commit();
+                    cafe.commitSession();
+                } else {
+                    conn.rollback();
+                    cafe.abortSession();
+                }
     			
     			break;
     		} catch (Exception e) {

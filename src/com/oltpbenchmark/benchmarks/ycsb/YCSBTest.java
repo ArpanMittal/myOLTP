@@ -13,6 +13,7 @@ import com.oltpbenchmark.benchmarks.smallbank.SmallBankWriteBack;
 import com.oltpbenchmark.benchmarks.smallbank.procedures.Balance;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.DeleteRecord;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.InsertRecord;
+import com.oltpbenchmark.benchmarks.ycsb.procedures.ReadModifyWriteRecord;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.ReadRecord;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.UpdateRecord;
 import com.usc.dblab.cafe.CachePolicy;
@@ -26,6 +27,7 @@ public class YCSBTest {
 	static UpdateRecord updateRecord = new UpdateRecord();
 	static InsertRecord insertRecord = new InsertRecord();
 	static DeleteRecord deleteRecord = new DeleteRecord();
+	static ReadModifyWriteRecord readModifyWriteRecord = new ReadModifyWriteRecord();
 	static SockIOPool cacheConnectionPool;
     static Connection conn;
     static NgCache cache;
@@ -64,7 +66,7 @@ public class YCSBTest {
                 Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK, 1, Stats.getStatsInstance(0), "jdbc:mysql://168.62.24.93:3306/ycsb?serverTimezone=UTC", 
                 "user", "123456", false, 0, 0, 1); 
         
-//        verifyCacheHit();
+       // verifyCacheHit();
  
     }
 	
@@ -74,7 +76,8 @@ public class YCSBTest {
 	            for (int i = 998; i <999; i++) {
 	            	//readRecord.run(conn, 2, results);
 	                //readRecord.run(conn, "10", cache);
-	                String[] val = {"101","22","23","24","25","26","27","28","29","21"};
+	                String[] val = {"99","22","23","24","25","26","27","28","29","21"};
+	                String[] result = new String[10];
 //	                readRecord.run(conn, "509", cache);
 //	                readRecord.run(conn, i+"", cache);
 //	                System.out.println(Stats.getAllStats().toString(2));
@@ -84,10 +87,11 @@ public class YCSBTest {
 	                
 //	                
 //	                readRecord.run(conn, "502", cache);
-	                insertRecord.run(conn,i+"",cache,val);
+	                readModifyWriteRecord.run(conn,i+"",cache,val,result);
+//	                insertRecord.run(conn,i+"",cache,val);
 //	                deleteRecord.run(conn, cache, i+"");
-//	                System.out.println("after delete");
-	                readRecord.run(conn, i+"", cache);
+	                //System.out.println("after rmw");
+	                //readRecord.run(conn, i+"", cache);
 	                //System.out.println(Stats.getAllStats().toString(2));
 	                //readRecord.run(conn, "1", cache);
 	                //deleteRecord.run(conn, cache, "520");
