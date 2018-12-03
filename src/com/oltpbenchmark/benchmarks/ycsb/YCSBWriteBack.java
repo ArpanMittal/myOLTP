@@ -22,6 +22,7 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.oltpbenchmark.api.SQLStmt;
 import com.oltpbenchmark.benchmarks.smallbank.SmallBankConstants;
+import com.oltpbenchmark.benchmarks.ycsb.procedures.InsertRecord;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.UpdateRecord;
 import com.oltpbenchmark.benchmarks.ycsb.results.UserResult;
 import com.oltpbenchmark.jdbc.AutoIncrementPreparedStatement;
@@ -53,6 +54,7 @@ public class YCSBWriteBack extends WriteBack {
     private static final String INCR = "A";
     private static final String DELETE = "D";
     final static UpdateRecord updateRecord = new UpdateRecord();
+    final static InsertRecord insertRecord= new InsertRecord(); 
     private Statement stmt;
 	private final Connection conn;
 
@@ -138,7 +140,7 @@ public class YCSBWriteBack extends WriteBack {
                 break;
         	case YCSBConstants.INSERT_QUERY_USERTABLE:
         		String s1 = String.format(INSERT+"o_field1,%s;o_field2,%s;o_field3,%s;o_field4,%s;o_field5,%s;o_field6,%s;o_field7,%s;o_field8,%s;o_field9,%s;o_field10,%s", SET, tokens[2], SET, tokens[3],SET, tokens[4],SET, tokens[5], SET, tokens[6], SET, tokens[7], SET, tokens[8],SET, tokens[9], SET, tokens[10], SET, tokens[11]);
-        		c = new Change(Change.TYPE_RMW,s1);
+        		c = new Change(Change.TYPE_SET,s1);
                 it = String.format(YCSBConstants.WB_UPDATE_USERTABLE_KEY, tokens[1]);
                 break;
         	case YCSBConstants.DELETE_QUERY_USERTABLE:
@@ -267,13 +269,41 @@ public class YCSBWriteBack extends WriteBack {
     				value[7] = tokens[16].split(";")[0];
     				value[8] = tokens[18].split(";")[0];
     				value[9] = tokens[20];
-
-    				int result = updateRecord.run(conn, Integer.parseInt(token2[1]), value );
-    				if (result == 0)
+    				int result =0;
+    				if(tokens[0].charAt(0)=='I') {
+    					result = insertRecord.run(conn, Integer.parseInt(token2[1]), value );
+        				if (result == 0)
+        	                throw new RuntimeException("Error!! Cannot update ycsb_id ="+tokens[1]);
+        				break;
+    				}else {
+    					result = updateRecord.run(conn, Integer.parseInt(token2[1]), value );
+    					if (result == 0)
     	                throw new RuntimeException("Error!! Cannot update ycsb_id ="+tokens[1]);
+    				}
     				break;
-    	            //return true;
             	}
+    	            //return true;
+//            	}case YCSBConstants.INSERT_QUERY_USERTABLE:{
+//            		String[] tokens = val.split(",");
+//            		String[] value = new String[10];
+//            		//value[0] = token2[1];
+//    				value[0] = tokens[2].split(";")[0];
+//    				value[1] = tokens[4].split(";")[0];
+//    				value[2] = tokens[6].split(";")[0];
+//    				value[3] = tokens[8].split(";")[0];
+//    				value[4] = tokens[10].split(";")[0];
+//    				value[5] = tokens[12].split(";")[0];
+//    				value[6] = tokens[14].split(";")[0];
+//    				value[7] = tokens[16].split(";")[0];
+//    				value[8] = tokens[18].split(";")[0];
+//    				value[9] = tokens[20];
+//
+//    				int result = insertRecord.run(conn, Integer.parseInt(token2[1]), value );
+//    				if (result == 0)
+//    	                throw new RuntimeException("Error!! Cannot update ycsb_id ="+tokens[1]);
+//    				break;
+//            	}
+            	
             		
             }
 //            System.out.println("apply sessions completed");

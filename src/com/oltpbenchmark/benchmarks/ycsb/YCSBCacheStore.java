@@ -190,17 +190,7 @@ public class YCSBCacheStore extends CacheStore {
                 throw new UserAbortException(msg);
             }
             else if (results.length!= 0) {
-//            	int user_id = r0.getInt("YCSB_KEY");
-//            	String field_01 = r0.getString("FIELD1");
-//            	String field_02 = r0.getString("FIELD2");
-//            	String field_03 = r0.getString("FIELD3");
-//            	String field_04 = r0.getString("FIELD4");
-//            	String field_05 = r0.getString("FIELD5");
-//            	String field_06 = r0.getString("FIELD6");
-//            	String field_07 = r0.getString("FIELD7");
-//            	String field_08 = r0.getString("FIELD8");
-//            	String field_09 = r0.getString("FIELD9");
-//            	String field_10 = r0.getString("FIELD10");
+
             	
         	int user_id = Integer.parseInt(results[0]);
         	String field_01 = results[1];
@@ -218,37 +208,7 @@ public class YCSBCacheStore extends CacheStore {
             }
             
             
-//        case SmallBankConstants.QUERY_ACCOUNT_BY_CUSTID_PREFIX:
-//            custId = Long.parseLong(tokens[1]);
-//            stmt = this.getPreparedStatement(conn, GetAccountById, custId);
-//            r0 = stmt.executeQuery();
-//            if (r0.next() == false) {
-//                String msg = "Invalid account '" + custId + "'";
-//                throw new UserAbortException(msg);
-//            }
-//            return new AccountResult(query, custId, r0.getString(1));
-//        case SmallBankConstants.QUERY_SAVINGS_PREFIX:
-//            custId = Long.parseLong(tokens[1]);
-//            stmt = this.getPreparedStatement(conn, GetSavingsBalance, custId);
-//            r0 = stmt.executeQuery();
-//            if (r0.next() == false) {
-//                String msg = String.format("No %s for customer #%d",
-//                        SmallBankConstants.TABLENAME_SAVINGS, 
-//                        custId);
-//                throw new UserAbortException(msg);
-//            }
-//            return new SavingsResult(query, r0.getDouble(1));
-//        case SmallBankConstants.QUERY_CHECKING_PREFIX:
-//            custId = Long.parseLong(tokens[1]);
-//            stmt = this.getPreparedStatement(conn, GetCheckingBalance, custId);
-//            r0 = stmt.executeQuery();
-//            if (r0.next() == false) {
-//                String msg = String.format("No %s for customer #%d",
-//                        SmallBankConstants.TABLENAME_CHECKING, 
-//                        custId);
-//                throw new UserAbortException(msg);
-//            }
-//            return new CheckingResult(query, r0.getDouble(1));
+
         }
 
        
@@ -349,7 +309,7 @@ public class YCSBCacheStore extends CacheStore {
 
 				result =  insertRecord.run(conn, Integer.parseInt(tokens[1]), value );
 				if (result == 0)
-	                throw new RuntimeException("Error!! Cannot update ycsb_id ="+tokens[1]);
+	                throw new RuntimeException("Error!! Cannot insert ycsb_id ="+tokens[1]);
 	            return true;
 			case YCSBConstants.DELETE_QUERY_USERTABLE:
 				result =  deleteRecord.run(conn, Integer.parseInt(tokens[1]));
@@ -657,7 +617,7 @@ public class YCSBCacheStore extends CacheStore {
 	        }
 	        
 	        switch (tokens[0]) {
-	        case YCSBConstants.QUERY_USERTABLE:
+	        case YCSBConstants.QUERY_USERTABLE:{
 	        	int id = Integer.parseInt(tokens[1]);
                 String field1 = map1.get("o_field1");
                 String field2 = map1.get("o_field2");
@@ -670,6 +630,21 @@ public class YCSBCacheStore extends CacheStore {
                 String field9 = map1.get("o_field9");
                 String field10 = map1.get("o_field10");
                 return new UserResult(query,id, field1, field2,field3, field4, field5, field6, field7, field8, field9, field10);
+	        }
+	        case YCSBConstants.INSERT_QUERY_USERTABLE:{
+	        	int id = Integer.parseInt(tokens[1]);
+                String field1 = map1.get("o_field1");
+                String field2 = map1.get("o_field2");
+                String field3  = map1.get("o_field3");
+                String field4  = map1.get("o_field4");
+                String field5 = map1.get("o_field5");
+                String field6 = map1.get("o_field6");
+                String field7 = map1.get("o_field7");
+                String field8 = map1.get("o_field8");
+                String field9 = map1.get("o_field9");
+                String field10 = map1.get("o_field10");
+                return new UserResult(query,id, field1, field2,field3, field4, field5, field6, field7, field8, field9, field10);
+	        }
 	        }
 		return null;
 	}
