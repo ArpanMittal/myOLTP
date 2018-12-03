@@ -139,14 +139,19 @@ public class YCSBWriteBack extends WriteBack {
                 it = String.format(YCSBConstants.WB_UPDATE_USERTABLE_KEY, tokens[1]);
                 break;
         	case YCSBConstants.INSERT_QUERY_USERTABLE:
-        		String s1 = String.format(INSERT+"o_field1,%s;o_field2,%s;o_field3,%s;o_field4,%s;o_field5,%s;o_field6,%s;o_field7,%s;o_field8,%s;o_field9,%s;o_field10,%s", SET, tokens[2], SET, tokens[3],SET, tokens[4],SET, tokens[5], SET, tokens[6], SET, tokens[7], SET, tokens[8],SET, tokens[9], SET, tokens[10], SET, tokens[11]);
+//        		String s = String.format("%s,o_field1,%s;%s,o_field2,%s;%s,o_field3,%s;%s,o_field4,%s;%s,o_field5,%s;%s,o_field6,%s;%s,o_field7,%s;%s,o_field8,%s;%s,o_field9,%s;%s,o_field10,%s", SET, tokens[2], SET, tokens[3],SET, tokens[4],SET, tokens[5], SET, tokens[6], SET, tokens[7], SET, tokens[8],SET, tokens[9], SET, tokens[10], SET, tokens[11]);
+//        		
+//        		String s1 = String.format(INSERT+"%s,o_field1,%s;o_field2,%s;o_field3,%s;o_field4,%s;o_field5,%s;o_field6,%s;o_field7,%s;o_field8,%s;o_field9,%s;o_field10,%s", SET, tokens[2], SET, tokens[3],SET, tokens[4],SET, tokens[5], SET, tokens[6], SET, tokens[7], SET, tokens[8],SET, tokens[9], SET, tokens[10], SET, tokens[11]);
+        		String s1 = String.format(INSERT+"%s,o_field1,%s;%s,o_field2,%s;%s,o_field3,%s;%s,o_field4,%s;%s,o_field5,%s;%s,o_field6,%s;%s,o_field7,%s;%s,o_field8,%s;%s,o_field9,%s;%s,o_field10,%s", SET, tokens[2], SET, tokens[3],SET, tokens[4],SET, tokens[5], SET, tokens[6], SET, tokens[7], SET, tokens[8],SET, tokens[9], SET, tokens[10], SET, tokens[11]);
         		c = new Change(Change.TYPE_SET,s1);
                 it = String.format(YCSBConstants.WB_UPDATE_USERTABLE_KEY, tokens[1]);
                 break;
         	case YCSBConstants.DELETE_QUERY_USERTABLE:
         		//String s2 = String.format(DELETE+"o_field1,%s;o_field2,%s;o_field3,%s;o_field4,%s;o_field5,%s;o_field6,%s;o_field7,%s;o_field8,%s;o_field9,%s;o_field10,%s", SET, tokens[2], SET, tokens[3],SET, tokens[4],SET, tokens[5], SET, tokens[6], SET, tokens[7], SET, tokens[8],SET, tokens[9], SET, tokens[10], SET, tokens[11]);
-        		String s2 = String.format(DELETE+"o_field1,%s;o_field2,%s;o_field3,%s;o_field4,%s;o_field5,%s;o_field6,%s;o_field7,%s;o_field8,%s;o_field9,%s;o_field10,%s", SET, null, SET, null,SET, null,SET, null, SET, null, SET, null, SET, null,SET, null, SET, null, SET, null);
-                c = new Change(Change.TYPE_RMW,s2);
+//        		String s2 = String.format(DELETE+"%s,o_field1,%s;o_field2,%s;o_field3,%s;o_field4,%s;o_field5,%s;o_field6,%s;o_field7,%s;o_field8,%s;o_field9,%s;o_field10,%s", SET, null, SET, null,SET, null,SET, null, SET, null, SET, null, SET, null,SET, null, SET, null, SET, null);
+        		String s2 = String.format(DELETE+"%s,o_field1,%s;%s,o_field2,%s;%s,o_field3,%s;%s,o_field4,%s;%s,o_field5,%s;%s,o_field6,%s;%s,o_field7,%s;%s,o_field8,%s;%s,o_field9,%s;%s,o_field10,%s", SET, tokens[2], SET, tokens[3],SET, tokens[4],SET, tokens[5], SET, tokens[6], SET, tokens[7], SET, tokens[8],SET, tokens[9], SET, tokens[10], SET, tokens[11]);
+        		
+        		c = new Change(Change.TYPE_RMW,s2);
                 it = String.format(YCSBConstants.WB_UPDATE_USERTABLE_KEY, tokens[1]);
                 break;
         }
