@@ -66,10 +66,10 @@ public class YCSBTest {
         WriteBack cacheBack = new YCSBWriteBack(conn);
         
         cache = new NgCache(cacheStore, cacheBack, 
-                Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK, 1, Stats.getStatsInstance(0), "jdbc:mysql://168.62.24.93:3306/ycsb?serverTimezone=UTC", 
+                Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK, 0, Stats.getStatsInstance(0), "jdbc:mysql://168.62.24.93:3306/ycsb?serverTimezone=UTC", 
                 "user", "123456", false, 0, 0, 1); 
         
-       // verifyCacheHit();
+        verifyCacheHit();
  
     }
 	
@@ -77,25 +77,25 @@ public class YCSBTest {
 	        try {
 	        	String results[] = new String[20];
 	        	ArrayList<String[]> result_scan = new ArrayList<String[]>();
-	            for (int i = 998; i <999; i++) {
+	            for (int i = 200; i <300; i++) {
 	            	//readRecord.run(conn, 2, results);
 	                //readRecord.run(conn, "10", cache);
-	                String[] val = {"99","22","23","24","25","26","27","28","29","21"};
-	                String[] result = new String[10];
+	                String[] val = {"99","22","23","24","25","26","27","28","29","99"};
+//	                String[] result = new String[10];
 //	                readRecord.run(conn, "509", cache);
-//	                readRecord.run(conn, i+"", cache);
+	                //readRecord.run(conn, i+"", cache);
 //	                System.out.println(Stats.getAllStats().toString(2));
 //	                System.out.println("After Update");
-//	                updateRecord.run(conn,i+"", cache, val);
+	                //updateRecord.run(conn,i+"", cache, val);
 //	                System.out.println(Stats.getAllStats().toString(2));
-	                scanRecord.run(conn, i, cache, 10, result_scan);
+//	                scanRecord.run(conn, i, cache, 10, result_scan);
 //	                
 //	                readRecord.run(conn, "502", cache);
-	                readModifyWriteRecord.run(conn,i+"",cache,val,result);
-//	                insertRecord.run(conn,i+"",cache,val);
+//	                readModifyWriteRecord.run(conn,i+"",cache,val,result);
+	                //insertRecord.run(conn,i+"",cache,val);
 //	                deleteRecord.run(conn, cache, i+"");
 	                //System.out.println("after rmw");
-	                //readRecord.run(conn, i+"", cache);
+	                readRecord.run(conn, i+"", cache, new String[YCSBConstants.NUM_FIELDS]);
 	                //System.out.println(Stats.getAllStats().toString(2));
 	                //readRecord.run(conn, "1", cache);
 	                //deleteRecord.run(conn, cache, "520");

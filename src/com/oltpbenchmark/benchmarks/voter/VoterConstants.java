@@ -31,4 +31,8 @@ public abstract class VoterConstants {
     public static final String CONTESTANT_NAMES_CSV = "Edwina Burnam,Tabatha Gehling,Kelly Clauss,Jessie Alloway," +
 											   "Alana Bregman,Jessie Eichman,Allie Rogalski,Nita Coster," +
 											   "Kurt Walser,Ericka Dieter,Loraine NygrenTania Mattioli";
+    public static final String TABLENAME_CONTESTANTS_KEY = TABLENAME_CONTESTANTS+",%s";
+    public static final String TABLENAME_VOTES_KEY = TABLENAME_VOTES+",%s";
+    
+    
 }
