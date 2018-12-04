@@ -231,17 +231,17 @@ public class YCSBCacheStore extends CacheStore {
             switch (tokens[0]) {
             case YCSBConstants.QUERY_USERTABLE:
                 UserResult user_res = (UserResult)result;
-                map.put("u_id", String.valueOf(user_res.getYcsb_key()));
-                map.put("u_field1", user_res.getField_01());
-                map.put("u_field2", user_res.getField_02());
-                map.put("u_field3", user_res.getField_03());
-                map.put("u_field4", user_res.getField_04());
-                map.put("u_field5", user_res.getField_05());
-                map.put("u_field6", user_res.getField_06());
-                map.put("u_field7", user_res.getField_07());
-                map.put("u_field8", user_res.getField_08());
-                map.put("u_field9", user_res.getField_09());
-                map.put("u_field10", user_res.getField_10());
+                map.put("o_id", String.valueOf(user_res.getYcsb_key()));
+                map.put("o_field1", user_res.getField_01());
+                map.put("o_field2", user_res.getField_02());
+                map.put("o_field3", user_res.getField_03());
+                map.put("o_field4", user_res.getField_04());
+                map.put("o_field5", user_res.getField_05());
+                map.put("o_field6", user_res.getField_06());
+                map.put("o_field7", user_res.getField_07());
+                map.put("o_field8", user_res.getField_08());
+                map.put("o_field9", user_res.getField_09());
+                map.put("o_field10", user_res.getField_10());
                 String key = String.format(YCSBConstants.MEM_UPDATE_USERTABLE_KEY, tokens[1]);
                 
                 if (map.size() > 0) {

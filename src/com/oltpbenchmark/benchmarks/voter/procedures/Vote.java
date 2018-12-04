@@ -52,6 +52,8 @@ import java.sql.SQLException;
 
 import com.oltpbenchmark.api.Procedure;
 import com.oltpbenchmark.api.SQLStmt;
+import com.oltpbenchmark.api.Procedure.UserAbortException;
+import com.usc.dblab.cafe.NgCache;
 
 public class Vote extends Procedure {
 	
@@ -127,4 +129,69 @@ public class Vote extends Procedure {
         // Set the return value to 0: successful vote
         return VOTE_SUCCESSFUL;
     }
+    
+    
+public long run(Connection conn, long voteId, long phoneNumber, int contestantNumber, long maxVotesPerPhoneNumber, NgCache cafe) throws SQLException {
+		
+//        PreparedStatement ps = getPreparedStatement(conn, checkContestantStmt);
+//        ps.setInt(1, contestantNumber);
+//        ResultSet rs = ps.executeQuery();
+//        try {
+//            if (!rs.next()) {
+//                return ERR_INVALID_CONTESTANT;    
+//            }
+//        } finally {
+//            rs.close();
+//        }
+//        
+//        ps = getPreparedStatement(conn, checkVoterStmt);
+//        ps.setLong(1, phoneNumber);
+//        rs = ps.executeQuery();
+//        boolean hasVoterEnt = rs.next();
+//        try {
+//            if (hasVoterEnt && rs.getLong(1) >= maxVotesPerPhoneNumber) {
+//                return ERR_VOTER_OVER_VOTE_LIMIT;
+//            }
+//        } finally {
+//            rs.close();
+//        }
+//        
+//        ps = getPreparedStatement(conn, checkStateStmt);
+//        ps.setShort(1, (short)(phoneNumber / 10000000l));
+//        rs = ps.executeQuery();
+//        // Some sample client libraries use the legacy random phone generation that mostly
+//        // created invalid phone numbers. Until refactoring, re-assign all such votes to
+//        // the "XX" fake state (those votes will not appear on the Live Statistics dashboard,
+//        // but are tracked as legitimate instead of invalid, as old clients would mostly get
+//        // it wrong and see all their transactions rejected).
+//        final String state = rs.next() ? rs.getString(1) : "XX";
+//        rs.close();
+//
+//        ps = getPreparedStatement(conn, insertVoteStmt);
+//        ps.setLong(1, voteId);
+//        ps.setLong(2, phoneNumber);
+//        ps.setString(3, state);
+//        ps.setInt(4, contestantNumber);
+//        ps.execute();
+//		
+//        // Set the return value to 0: successful vote
+//        return VOTE_SUCCESSFUL;
+	try {
+		cafe.startSession("Voter");
+		
+		
+	}catch (Exception e) {
+		conn.rollback();
+		try {
+			cafe.abortSession();
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		throw new UserAbortException("Some error happens. "+ e.getMessage());
+	}
+	return maxVotesPerPhoneNumber;		
+    }
+    
+    
 }

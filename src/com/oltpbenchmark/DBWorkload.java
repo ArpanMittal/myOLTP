@@ -52,6 +52,7 @@ import com.oltpbenchmark.benchmarks.smallbank.procedures.ReadOnly_SmallBank;
 import com.oltpbenchmark.benchmarks.smallbank.procedures.Warmup;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCConfig;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.ReadOnly;
+import com.oltpbenchmark.benchmarks.ycsb.YCSBWarmpup;
 import com.oltpbenchmark.types.DatabaseType;
 import com.oltpbenchmark.util.ClassUtil;
 import com.oltpbenchmark.util.FileUtil;
@@ -359,7 +360,7 @@ public class DBWorkload {
         //TODO: remove this change
 //        if (Config.CAFE && TPCCConfig.warmup) {
         //if (Config.CAFE &&(TPCCConfig.warmup ||SMALLBANKCONFIG.)) {
-        if(Config.CAFE && false) {
+        if(Config.CAFE ) {
             System.out.println("Load cache");
             String[] tokens = new String[10];
             tokens[0] = scaleFactor+"";
@@ -374,8 +375,12 @@ public class DBWorkload {
             tokens[8] = TPCCConfig.configCustPerDist+"";
             tokens[9] = "true";
             //ReadOnly_SmallBank.main(tokens);
-            Warmup.main(tokens);
-            //ReadOnly.main(tokens);
+//            Warmup.main(tokens);
+            //For YCSB
+            YCSBWarmpup.main(tokens);
+//            if(TPCCConfig.warmup)
+//            	ReadOnly.main(tokens);
+         
         }
         
         if (argsLine.hasOption("storesess")) {
