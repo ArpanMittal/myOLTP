@@ -30,7 +30,7 @@ public class YCSBWarmpup {
     
 
     static Random rand = new Random();
-    static final int DB_SIZE = 10000000;
+    static final int DB_SIZE = 800000;
     
     public static void main(String[] args) {    
 //        String dbip = "168.62.24.93";

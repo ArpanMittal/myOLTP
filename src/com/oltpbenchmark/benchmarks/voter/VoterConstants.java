@@ -33,6 +33,8 @@ public abstract class VoterConstants {
 											   "Kurt Walser,Ericka Dieter,Loraine NygrenTania Mattioli";
     public static final String TABLENAME_CONTESTANTS_KEY = TABLENAME_CONTESTANTS+",%s";
     public static final String TABLENAME_VOTES_KEY = TABLENAME_VOTES+",%s";
+    public static final String TABLENAME_LOCATIONS_key = TABLENAME_LOCATIONS+",%s";
+    
     
     
 }
