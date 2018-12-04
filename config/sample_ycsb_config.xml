@@ -16,7 +16,7 @@
     <logging>true</logging>
     <cachepolicy>WRITE_BACK</cachepolicy>
     
-    <scalefactor>1</scalefactor>
+    <scalefactor>1000</scalefactor>
     
     <!-- Scalefactor in YCSB is *1000 the number of rows in the USERTABLE-->
     <scalefactor>1200</scalefactor>
