@@ -43,6 +43,20 @@ public class UserResult extends QueryResult {
 		this.field_09 = field_09;
 		this.field_10 = field_10;
 	}
+	
+	public String[] getResult(String[] result) {
+		result[0] = this.field_01;
+		result[1] = this.field_02;
+		result[2] = this.field_03;
+		result[3] = this.field_04;
+		result[4] = this.field_05;
+		result[5] = this.field_06;
+		result[6] = this.field_07;
+		result[7] = this.field_08;
+		result[8] = this.field_09;
+		result[9] = this.field_10;
+		return result;
+	}
 	/**
 	 * @return the ycsb_key
 	 */

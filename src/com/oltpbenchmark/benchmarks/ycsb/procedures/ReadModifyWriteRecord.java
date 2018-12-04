@@ -86,6 +86,7 @@ public class ReadModifyWriteRecord extends Procedure {
     			
     			String getUser = String.format(YCSBConstants.QUERY_KEY, keyName);
     			UserResult user_result = (UserResult) cafe.readStatement(getUser);
+    			results = user_result.getResult(results);
     			System.out.println(user_result.getField_01());
     			
     			

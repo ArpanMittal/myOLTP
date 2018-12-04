@@ -167,14 +167,17 @@ public class YCSBWorker extends Worker<YCSBBenchmark> {
         assert (this.procScanRecord != null);
         int keyname = readRecord.nextInt();
         int count = randScan.nextInt();
-        this.procScanRecord.run(conn, keyname, count, new ArrayList<String[]>());
+        if(Config.CAFE)
+        	this.procScanRecord.run(conn,keyname,this.cafe, count,new ArrayList<String[]>());
+        else
+        	this.procScanRecord.run(conn, keyname, count, new ArrayList<String[]>());
     }
 
     private void readRecord() throws SQLException {
         assert (this.procReadRecord != null);
         int keyname = readRecord.nextInt();
         if(Config.CAFE)
-        	this.procReadRecord.run(conn, keyname+"", this.cafe);
+        	this.procReadRecord.run(conn, keyname+"", this.cafe,this.results);
         	//this.procReadRecord.run(conn, keyname, this.results);
         else
         	this.procReadRecord.run(conn, keyname, this.results);

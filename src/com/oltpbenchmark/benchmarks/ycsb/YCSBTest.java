@@ -3,6 +3,7 @@ package com.oltpbenchmark.benchmarks.ycsb;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -15,6 +16,7 @@ import com.oltpbenchmark.benchmarks.ycsb.procedures.DeleteRecord;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.InsertRecord;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.ReadModifyWriteRecord;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.ReadRecord;
+import com.oltpbenchmark.benchmarks.ycsb.procedures.ScanRecord;
 import com.oltpbenchmark.benchmarks.ycsb.procedures.UpdateRecord;
 import com.usc.dblab.cafe.CachePolicy;
 import com.usc.dblab.cafe.CacheStore;
@@ -27,6 +29,7 @@ public class YCSBTest {
 	static UpdateRecord updateRecord = new UpdateRecord();
 	static InsertRecord insertRecord = new InsertRecord();
 	static DeleteRecord deleteRecord = new DeleteRecord();
+	static ScanRecord scanRecord = new ScanRecord();
 	static ReadModifyWriteRecord readModifyWriteRecord = new ReadModifyWriteRecord();
 	static SockIOPool cacheConnectionPool;
     static Connection conn;
@@ -73,6 +76,7 @@ public class YCSBTest {
 	   public static void verifyCacheHit() {
 	        try {
 	        	String results[] = new String[20];
+	        	ArrayList<String[]> result_scan = new ArrayList<String[]>();
 	            for (int i = 998; i <999; i++) {
 	            	//readRecord.run(conn, 2, results);
 	                //readRecord.run(conn, "10", cache);
@@ -84,7 +88,7 @@ public class YCSBTest {
 //	                System.out.println("After Update");
 //	                updateRecord.run(conn,i+"", cache, val);
 //	                System.out.println(Stats.getAllStats().toString(2));
-	                
+	                scanRecord.run(conn, i, cache, 10, result_scan);
 //	                
 //	                readRecord.run(conn, "502", cache);
 	                readModifyWriteRecord.run(conn,i+"",cache,val,result);
