@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import com.oltpbenchmark.api.SQLStmt;
 import com.oltpbenchmark.api.Procedure.UserAbortException;
 import com.oltpbenchmark.benchmarks.ycsb.YCSBConstants;
@@ -19,6 +21,7 @@ import com.oltpbenchmark.jdbc.AutoIncrementPreparedStatement;
 import com.oltpbenchmark.types.DatabaseType;
 import com.usc.dblab.cafe.CacheEntry;
 import com.usc.dblab.cafe.CacheStore;
+import com.usc.dblab.cafe.Change;
 import com.usc.dblab.cafe.Delta;
 import com.usc.dblab.cafe.QueryResult;
 import java.sql.PreparedStatement;
@@ -73,7 +76,24 @@ public class VoterCacheStore extends CacheStore{
 	@Override
 	public Map<String, Delta> updateCacheEntries(String dml, Set<String> keys) {
 		// TODO Auto-generated method stub
-		return null;
+		String[] tokens = dml.split(",");
+        Delta d = null;
+        String s;
+        Map<String, Delta> map = new HashMap<>();
+        switch (tokens[0]) {
+        	case VoterConstants.INSER_TABLENAME_VOTES:{
+        		s = String.format("%s,voteId,%s;%s,phoneNumber,%s;%s,state,%s;%s,contestantNumber,%s;", SET, tokens[1], SET, tokens[2],SET, tokens[3],SET, tokens[4]);
+    	        d = new Delta(Change.TYPE_SET, s);
+    	        map.put(String.format(VoterConstants.MEM_INSER_TABLENAME_VOTES_KEY, tokens[1]), d);  
+    	        break;
+        	}case VoterConstants.UPDATE_TABLENAME_VOTES:{
+        		s = String.format("%s,count,%s", SET,tokens[3]);
+        		d = new Delta(Change.TYPE_SET, s);
+        		map.put(String.format(VoterConstants.TABLENAME_VOTES_KEY, tokens[1], tokens[2]),d);
+        		break;
+        	}
+        }
+		return map;
 	}
 
 	@Override
@@ -101,7 +121,18 @@ public class VoterCacheStore extends CacheStore{
 	@Override
 	public Set<String> getImpactedKeysFromDml(String dml) {
 		// TODO Auto-generated method stub
-		return null;
+		String[] tokens = dml.split(",");
+        String op = tokens[0];
+        Set<String> set = new HashSet<>();
+        switch (op) {
+        	case VoterConstants.INSER_TABLENAME_VOTES:
+        		 set.add(String.format(VoterConstants.MEM_INSER_TABLENAME_VOTES_KEY, tokens[1]));
+        		 break;
+        	case VoterConstants.UPDATE_TABLENAME_VOTES:
+        		set.add(String.format(VoterConstants.TABLENAME_VOTES_KEY,tokens[1], tokens[2]));
+        		break;
+        }
+		return set;
 	}
 
 	@Override
@@ -211,14 +242,147 @@ public class VoterCacheStore extends CacheStore{
 	@Override
 	public boolean dmlDataStore(String dml) throws Exception {
 		// TODO Auto-generated method stub
-		return false;
+		//Not for update count no need to propegate them to db
+		String[] tokens = dml.split(",");
+		PreparedStatement ps = null;
+        ResultSet r0 = null;
+		switch (tokens[0]) {
+			case VoterConstants.INSER_TABLENAME_VOTES:{
+				long phoneNumber = Long.parseLong(tokens[2]);
+				String state = tokens[3];
+				int con_num = Integer.parseInt(tokens[4]);
+				ps = this.getPreparedStatement(conn, insertVoteStmt);
+		        ps.setLong(1, Integer.parseInt(tokens[1]));
+		        ps.setLong(2, phoneNumber);
+		        ps.setString(3, state);
+		        ps.setInt(4,con_num);
+		        ps.execute();
+		        break;
+			}
+		}
+		return true;
 	}
 
 	@Override
 	public CacheEntry applyDelta(Delta delta, CacheEntry cacheEntry) {
 		// TODO Auto-generated method stub
-		return null;
+		if (delta.getType() != Delta.TYPE_RMW && delta.getType() != Delta.TYPE_SET) {
+            throw new NotImplementedException("This function applied to a change of type RMW only.");
+        }
+		Object cacheVal = cacheEntry.getValue();
+        if (cacheVal instanceof HashMap) {
+            HashMap map = (HashMap)cacheVal;
+            if (map.size() == 0) {
+                applyDeltaHashMap(delta, (HashMap<String, String>)cacheVal);    
+            } else {
+                Object akey = map.keySet().iterator().next();
+                if (akey instanceof String) {
+                    applyDeltaHashMap(delta, (HashMap<String, String>)cacheVal);
+                } else if (akey instanceof Integer) {
+                    applyDeltaHashMap2(delta, (HashMap<Integer, Set<Integer>>)cacheVal);
+                }
+            }
+        } else if (cacheVal instanceof List) {
+            List<Integer> val = (List<Integer>)cacheVal;
+            Object obj = delta.getValue();
+            if (obj instanceof Integer) {
+                switch (delta.getType()) {
+                case Delta.TYPE_RMW:
+                    if (val.contains(obj)) {
+                        val.remove((Integer)obj);
+                    } else {
+                        System.out.println("Value of key "+cacheEntry.getKey()+" does not contains "+obj);
+                    }
+                    break;
+                case Delta.TYPE_APPEND:
+                    if (val.contains((obj))) {
+                        System.out.println("Value of key "+cacheEntry.getKey()+ " contains "+ obj);
+                    } else {
+                            val.add((Integer)obj);
+                    }
+                    break;
+                }
+            }
+        }
+        return cacheEntry;
+		
 	}
+	
+	private void applyDeltaHashMap2(Delta delta,
+            HashMap<Integer, Set<Integer>> v) {
+        String dVal = (String) delta.getValue();
+        String[] ops = dVal.split(";");
+        int old_o_id = 0;
+        for (String op: ops) {
+            String[] fields = op.split(",");
+            switch (fields[0]) {
+            case ADD:
+                int o_id = Integer.parseInt(fields[2]);
+                int i_id = Integer.parseInt(fields[4]);
+                 Set<Integer> set = v.get(o_id);
+                if (set == null) {
+                    set = new HashSet<>();
+                    v.put(o_id, set);
+                }
+                set.add(i_id);
+                old_o_id = o_id - 20;
+                break;
+            case REMOVE_FIRST:
+                v.remove(old_o_id);
+                break;
+            default:
+                System.out.println("Error: not a delta of type ADD");
+                break;
+            }
+        }
+    }
+
+    private void applyDeltaHashMap(Delta delta, HashMap<String, String> cacheVal) {
+        String dVal = (String) delta.getValue();
+        String[] ops = dVal.split(";");
+        
+        // handle special case where there must be a check on the list of attributes.
+        if (dVal.contains(CHECK)) {
+            for (String op: ops) {
+                if (op.contains(CHECK)) {
+                    String[] fields = op.split(",");
+                    if (fields[0].equals(CHECK)) {
+                        String attr = fields[1];
+                        String val = cacheVal.get(attr);
+                        if (val == null || !val.equals(fields[2])) {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        
+        for (String op: ops) {
+            String[] fields = op.split(",");
+            switch (fields[0]) {
+            case SET:
+                cacheVal.put(fields[1], fields[2]);
+                break;
+//            case INCR:
+//                String val = cacheVal.get(fields[1]);
+//                if (val != null) {
+//                    double d = Double.parseDouble(val);
+//                    double i = Double.parseDouble(fields[2]);
+//                    cacheVal.put(fields[1], String.valueOf(d+i));
+//                }
+//                break;
+//            case INCR_OR_SET:
+//                val = cacheVal.get(fields[1]);
+//                if (val == null) {
+//                    cacheVal.put(fields[1], fields[2]);
+//                } else {
+//                    double d = Double.parseDouble(val);
+//                    double i = Double.parseDouble(fields[2]);
+//                    cacheVal.put(fields[1], String.valueOf(d+i));
+//                }
+            }
+        }
+    }
 
 	@Override
 	public byte[] serialize(CacheEntry cacheEntry) {

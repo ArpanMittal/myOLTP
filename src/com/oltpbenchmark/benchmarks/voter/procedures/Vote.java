@@ -148,6 +148,7 @@ public long run(Connection conn, long voteId, long phoneNumber, int contestantNu
 		VoteCountResult voterCountResult = (VoteCountResult)cafe.readStatement(getVoterCount);
 		if(voterCountResult == null || Integer.parseInt(voterCountResult.getVote_count())>maxVotesPerPhoneNumber)
 			return ERR_VOTER_OVER_VOTE_LIMIT;
+		System.out.println(voterCountResult.getVote_count());
 		
 		String getState = String.format(VoterConstants.TABLENAME_LOCATIONS_KEY,(short)(phoneNumber / 10000000l) );
 		StateResult stateResult = (StateResult)cafe.readStatement(getState);
@@ -157,23 +158,25 @@ public long run(Connection conn, long voteId, long phoneNumber, int contestantNu
 		else
 			state = stateResult.getState_name();
 		
-		conn.commit();
+		String insertVoteKey = String.format(VoterConstants.INSER_TABLENAME_VOTES_KEY, voteId, phoneNumber,state,contestantNumber);
 		
-		try {
-			cafe.commitSession();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}	
+		boolean success = cafe.writeStatement(insertVoteKey);
+        assert(success) :
+            String.format("Failed to insert %s for Votes #%s", voteId, phoneNumber);
+        
+        String updateVoterCount = String.format(VoterConstants.UPDATE_TABLENAME_VOTES, voteId, maxVotesPerPhoneNumber,Integer.parseInt(voterCountResult.getVote_count())+1);
+        success = cafe.writeStatement(updateVoterCount);
+		assert(success):
+			String.format("Failed to increment update for Votes #%s", phoneNumber);
+
 		
-		
-//		  if (cafe.validateSession()) {
-//              conn.commit();
-//              cafe.commitSession();
-//          } else {
-//              conn.rollback();
-//              cafe.abortSession();
-//          }
+		  if (cafe.validateSession()) {
+              conn.commit();
+              cafe.commitSession();
+          } else {
+              conn.rollback();
+              cafe.abortSession();
+          }
 	}catch (Exception e) {
 //	    e.printStackTrace(System.out);
 		conn.rollback();
@@ -186,7 +189,7 @@ public long run(Connection conn, long voteId, long phoneNumber, int contestantNu
 		throw new UserAbortException("Some error happens. "+ e.getMessage());
     
 	}
-
+	System.out.println("heelo"+VOTE_SUCCESSFUL+"=true");
         return VOTE_SUCCESSFUL;
 	
 //	return maxVotesPerPhoneNumber;		

@@ -38,13 +38,26 @@ public abstract class VoterConstants {
     public static final String TABLENAME_VOTES_KEY = TABLENAME_VOTES+",%s"+",%s";
     public static final String TABLENAME_LOCATIONS_KEY = TABLENAME_LOCATIONS+",%s";
     
-    public static final String TABLENAME_INSERT_VOTES_KEY= TABLENAME_VOTES+",%s";
+    //public static final String TABLENAME_INSERT_VOTES_KEY= TABLENAME_VOTES+",%s";
     
     public static final String WB_TABLENAME_CONTESTANTS_KEY = WB_TABLENAME_CONTESTANTS+",%s";
     public static final String WB_TABLENAME_VOTES_KEY = WB_TABLENAME_VOTES+",%s"+",%s";
     public static final String WB_TABLENAME_LOCATIONS_key = WB_TABLENAME_LOCATIONS+",%s";
     
     public static final String WB_TABLENAME_INSERT_VOTES_KEY= WB_TABLENAME_VOTES+",%s";
+    
+    public static final String INSER_TABLENAME_VOTES = "I_VOTES";
+    public static final String INSER_TABLENAME_VOTES_KEY = INSER_TABLENAME_VOTES+",%s"+",%s"+",%s"+",%s";
+    
+    public static final String UPDATE_TABLENAME_VOTES = "U_VOTES";
+    public static final String UPDATE_TABLENAME_VOTES_KEY = UPDATE_TABLENAME_VOTES +",%s"+",%s"+",%s";
+    
+    public static final String MEM_INSER_TABLENAME_VOTES_KEY = INSER_TABLENAME_VOTES+",%s";
+    public static final String WB_INSER_TABLENAME_VOTES_KEY = "WB"+INSER_TABLENAME_VOTES+",%s";
+    
+    public static final String WB_UPDATE_TABLENAME_VOTES = "WB_U_VOTES";
+    
+    public static final String WB_UPDATE_TABLENAME_VOTES_KEY = WB_UPDATE_TABLENAME_VOTES +",%s"+",%s";
     
     
     
