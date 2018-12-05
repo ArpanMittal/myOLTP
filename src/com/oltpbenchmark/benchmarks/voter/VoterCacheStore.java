@@ -144,7 +144,7 @@ public class VoterCacheStore extends CacheStore{
                     	throw new UserAbortException(msg);
                     }else {
                     	int count = r0.getInt(1);
-                    	return new VoteCountResult(query,Long.parseLong(tokens[1]),r0.getInt(1)+"");
+                    	return new VoteCountResult(query,Long.parseLong(tokens[1]),Long.parseLong(tokens[2]),r0.getInt(1)+"");
                     }
                 } finally {
                     r0.close();
@@ -177,7 +177,7 @@ public class VoterCacheStore extends CacheStore{
         	case VoterConstants.TABLENAME_CONTESTANTS:{
         		ContestantResult con_result = (ContestantResult)result;
         		map.put("o_con_name",con_result.getName());
-        		key = String.format(VoterConstants.TABLENAME_CONTESTANTS, con_result.getKey());
+        		key = String.format(VoterConstants.TABLENAME_CONTESTANTS_KEY, con_result.getKey());
         		if (map.size() > 0) {
                     e = new CacheEntry(key, map, false);
                 }
@@ -185,7 +185,7 @@ public class VoterCacheStore extends CacheStore{
         	}case VoterConstants.TABLENAME_LOCATIONS:{
         		StateResult state_result = (StateResult)result;
         		map.put("o_state_name", state_result.getState_name() );
-        		key = String.format(VoterConstants.TABLENAME_LOCATIONS, state_result.getArea_code());
+        		key = String.format(VoterConstants.TABLENAME_LOCATIONS_KEY, state_result.getArea_code());
         		if (map.size() > 0) {
                     e = new CacheEntry(key, map, false);
                 }
@@ -193,7 +193,7 @@ public class VoterCacheStore extends CacheStore{
         	}case VoterConstants.TABLENAME_VOTES:{
         		VoteCountResult vote_count_result = (VoteCountResult)result;
         		map.put("o_vote_count", vote_count_result.getVote_count());
-        		key = String.format(VoterConstants.TABLENAME_VOTES, vote_count_result.getPhone_num());
+        		key = String.format(VoterConstants.TABLENAME_VOTES_KEY, vote_count_result.getPhone_num(),vote_count_result.getMax_vote_count());
         		if (map.size() > 0) {
                     e = new CacheEntry(key, map, false);
                 }
@@ -407,9 +407,10 @@ public class VoterCacheStore extends CacheStore{
                 return new StateResult(query,id,con_name);
 	        }
 	        case VoterConstants.TABLENAME_VOTES:{
-	        	int vote_id = Integer.parseInt(tokens[1]);
+	        	long vote_id = Long.parseLong(tokens[1]);
+	        	long max_vote_count = Long.parseLong(tokens[2]);
                 String o_vote_count = map1.get("o_vote_count");
-                return new VoteCountResult(query,vote_id,o_vote_count);
+                return new VoteCountResult(query,vote_id,max_vote_count,o_vote_count);
 	        }
 //	        case VoterConstants.TABLENAME_VOTES:{
 //	        	int vote_id = Integer.parseInt(tokens[1]);
