@@ -44,7 +44,7 @@ public class VoterCacheStore extends CacheStore{
 	
     // Checks if the vote is for a valid contestant
     public final SQLStmt checkContestantStmt = new SQLStmt(
-	   "SELECT contestant_number FROM CONTESTANTS WHERE contestant_number = ?;"
+	   "SELECT * FROM CONTESTANTS WHERE contestant_number = ?;"
     );
 	
     // Checks if the voter has exceeded their allowed number of votes
@@ -54,7 +54,7 @@ public class VoterCacheStore extends CacheStore{
 	
     // Checks an area code to retrieve the corresponding state
     public final SQLStmt checkStateStmt = new SQLStmt(
-		"SELECT state FROM AREA_CODE_STATE WHERE area_code = ?;"
+		"SELECT * FROM AREA_CODE_STATE WHERE area_code = ?;"
     );
 	
     // Records a vote
@@ -65,7 +65,10 @@ public class VoterCacheStore extends CacheStore{
 	
 
     private Connection conn;
-
+    
+    public VoterCacheStore(Connection conn) {
+    	this.conn = conn;
+    }
     
 	@Override
 	public Map<String, Delta> updateCacheEntries(String dml, Set<String> keys) {
@@ -84,7 +87,7 @@ public class VoterCacheStore extends CacheStore{
         		 set.add(String.format(VoterConstants.TABLENAME_CONTESTANTS_KEY,tokens[1]));
         		 break;
         	case VoterConstants.TABLENAME_LOCATIONS:
-        		set.add(String.format(VoterConstants.TABLENAME_LOCATIONS_key,tokens[1]));
+        		set.add(String.format(VoterConstants.TABLENAME_LOCATIONS_KEY,tokens[1]));
        		 	break;
        		 	//For select number of votes statement in votes
         	case VoterConstants.TABLENAME_VOTES:
@@ -121,14 +124,18 @@ public class VoterCacheStore extends CacheStore{
                     	throw new UserAbortException(msg);
 //                        return ERR_INVALID_CONTESTANT;    
                     }else {
-                    	return new ContestantResult(query,r0.getInt("contestant_number"),r0.getString("contestant_name"));
+//                    	int con_num = r0.getInt(0);
+//                    	String name = r0.getString(1);
+//                    	String con_num = r0.getString(2);
+                    	ContestantResult con_result = new ContestantResult(query,r0.getInt("contestant_number"),r0.getString("contestant_name"));
+                    	return con_result;
                     }
                 } finally {
                     r0.close();
                 }
         	}case VoterConstants.TABLENAME_VOTES:{
         		stmt = this.getPreparedStatement(conn, checkVoterStmt);
-                stmt.setLong(1,Integer.parseInt(tokens[1]));
+                stmt.setLong(1,Long.parseLong(tokens[1]));
                 r0 = stmt.executeQuery();
                 boolean hasVoterEnt = r0.next();
                 try {
@@ -136,19 +143,20 @@ public class VoterCacheStore extends CacheStore{
                     	String msg = "invalid votes '" + tokens[1] + "'";
                     	throw new UserAbortException(msg);
                     }else {
-                    	return new VoteCountResult(query,Integer.parseInt(tokens[1]),r0.getInt(0)+"");
+                    	int count = r0.getInt(1);
+                    	return new VoteCountResult(query,Long.parseLong(tokens[1]),r0.getInt(1)+"");
                     }
                 } finally {
                     r0.close();
                 }
         	}case VoterConstants.TABLENAME_LOCATIONS:{
         		stmt = this.getPreparedStatement(conn, checkStateStmt);
-                stmt.setShort(1, (short)(Integer.parseInt(tokens[1]) / 10000000l));
+                stmt.setShort(1, (short)(Integer.parseInt(tokens[1])));
                 r0 = stmt.executeQuery();
               
-                final String state = r0.next() ? r0.getString(1) : "XX";
+                final String state = r0.next() ? r0.getString(2) : "XX";
                 r0.close();
-                return new StateResult(query,(short)(Integer.parseInt(tokens[1])/ 10000000l),state);
+                return new StateResult(query,(short)(Integer.parseInt(tokens[1])),state);
                 
         	}
         }
@@ -170,23 +178,34 @@ public class VoterCacheStore extends CacheStore{
         		ContestantResult con_result = (ContestantResult)result;
         		map.put("o_con_name",con_result.getName());
         		key = String.format(VoterConstants.TABLENAME_CONTESTANTS, con_result.getKey());
+        		if (map.size() > 0) {
+                    e = new CacheEntry(key, map, false);
+                }
         		break;
         	}case VoterConstants.TABLENAME_LOCATIONS:{
         		StateResult state_result = (StateResult)result;
         		map.put("o_state_name", state_result.getState_name() );
         		key = String.format(VoterConstants.TABLENAME_LOCATIONS, state_result.getArea_code());
+        		if (map.size() > 0) {
+                    e = new CacheEntry(key, map, false);
+                }
         		break;
         	}case VoterConstants.TABLENAME_VOTES:{
         		VoteCountResult vote_count_result = (VoteCountResult)result;
         		map.put("o_vote_count", vote_count_result.getVote_count());
         		key = String.format(VoterConstants.TABLENAME_VOTES, vote_count_result.getPhone_num());
+        		if (map.size() > 0) {
+                    e = new CacheEntry(key, map, false);
+                }
+        		break;
         	}
         	
            }
-        if (map.size() > 0) {
-            e = new CacheEntry(key, map, false);
-        }
-		return null;
+        
+        if (e != null)
+            set.add(e);
+
+        return set;
 	}
 
 	@Override

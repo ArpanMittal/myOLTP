@@ -20,6 +20,17 @@ import com.usc.dblab.cafe.Stats;
 import com.usc.dblab.cafe.WriteBack;
 
 public class VoterWriteBack extends WriteBack{
+	private static final String INSERT = "I";
+    private static final String SET = "S";
+    private static final String INCR = "A";
+    private static final String DELETE = "D";
+    private Statement stmt;
+	private final Connection conn;
+	
+	public VoterWriteBack(Connection conn) {
+		// TODO Auto-generated constructor stub
+		this.conn = conn;
+	}
 
 	@Override
 	public Set<String> getMapping(String key) {
@@ -58,17 +69,17 @@ public class VoterWriteBack extends WriteBack{
         Set<String> set = new HashSet<>();
         switch (tokens[0]) {
         	case VoterConstants.TABLENAME_CONTESTANTS:
-        		set.add(String.format(VoterConstants.TABLENAME_CONTESTANTS_KEY,tokens[1]));
+        		set.add(String.format(VoterConstants.WB_TABLENAME_CONTESTANTS_KEY,tokens[1]));
         		break;
         	case VoterConstants.TABLENAME_LOCATIONS:
-        		set.add(String.format(VoterConstants.TABLENAME_LOCATIONS_key,tokens[1]));
+        		set.add(String.format(VoterConstants.WB_TABLENAME_LOCATIONS_key,tokens[1]));
         		break;
   		 	//For select number of votes statement in votes
         	case VoterConstants.TABLENAME_VOTES:
-        		set.add(String.format(VoterConstants.TABLENAME_VOTES_KEY,tokens[1],tokens[2]));
+        		set.add(String.format(VoterConstants.WB_TABLENAME_VOTES_KEY,tokens[1],tokens[2]));
         		break;
         }
-		return null;
+		return set;
 	}
 
 	@Override

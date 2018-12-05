@@ -3,14 +3,14 @@ package com.oltpbenchmark.benchmarks.voter;
 import com.usc.dblab.cafe.QueryResult;
 
 public class VoteCountResult extends QueryResult {
-	int voter_id;
+	long voter_id;
 	String vote_count;
 	/**
 	 * @param query
 	 * @param voter_id
 	 * @param vote_count
 	 */
-	public VoteCountResult(String query, int phone_num, String vote_count) {
+	public VoteCountResult(String query, long phone_num, String vote_count) {
 		super(query);
 		this.voter_id = phone_num;
 		this.vote_count = vote_count;
@@ -18,7 +18,7 @@ public class VoteCountResult extends QueryResult {
 	/**
 	 * @return the voter_id
 	 */
-	public int getPhone_num() {
+	public long getPhone_num() {
 		return voter_id;
 	}
 	/**
