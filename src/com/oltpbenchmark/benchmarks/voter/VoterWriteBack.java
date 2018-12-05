@@ -1,12 +1,17 @@
 package com.oltpbenchmark.benchmarks.voter;
 
 import java.io.PrintWriter;
+import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.lang.NotImplementedException;
 
 import com.usc.dblab.cafe.Change;
 import com.usc.dblab.cafe.QueryResult;
@@ -49,6 +54,20 @@ public class VoterWriteBack extends WriteBack{
 	@Override
 	public Set<String> rationalizeRead(String query) {
 		// TODO Auto-generated method stub
+		String[] tokens = query.split(",");
+        Set<String> set = new HashSet<>();
+        switch (tokens[0]) {
+        	case VoterConstants.TABLENAME_CONTESTANTS:
+        		set.add(String.format(VoterConstants.TABLENAME_CONTESTANTS_KEY,tokens[1]));
+        		break;
+        	case VoterConstants.TABLENAME_LOCATIONS:
+        		set.add(String.format(VoterConstants.TABLENAME_LOCATIONS_key,tokens[1]));
+        		break;
+  		 	//For select number of votes statement in votes
+        	case VoterConstants.TABLENAME_VOTES:
+        		set.add(String.format(VoterConstants.TABLENAME_VOTES_KEY,tokens[1],tokens[2]));
+        		break;
+        }
 		return null;
 	}
 
@@ -80,7 +99,18 @@ public class VoterWriteBack extends WriteBack{
 	@Override
 	public QueryResult merge(String query, QueryResult result, LinkedHashMap<String, List<Change>> buffVals) {
 		// TODO Auto-generated method stub
-		return null;
+		if (buffVals == null || buffVals.size() == 0) 
+			return result;
+		
+		
+			String tokens[] = query.split(",");
+			throw new NotImplementedException("implement insert in merge");
+        // since each query impacts only one data item, get the change list.
+//			List<Change> changes = buffVals.values().iterator().next();
+//			switch (tokens[0]) {
+//			
+//			}
+//		return null;
 	}
 
 	@Override
@@ -98,7 +128,36 @@ public class VoterWriteBack extends WriteBack{
 	@Override
 	public Map<String, List<Change>> deserializeSessionChanges(byte[] bytes) {
 		// TODO Auto-generated method stub
-		return null;
-	}
+		ByteBuffer buff = ByteBuffer.wrap(bytes);
 
+        int offset = 0;
+        LinkedHashMap<String, List<Change>> changesMap = new LinkedHashMap<>();
+        while (offset < bytes.length) {
+            int sz = buff.getInt();
+            byte[] b = new byte[sz];
+            buff.get(b);
+            String it = new String(b);
+            offset += 4+sz;
+
+            sz = buff.getInt();
+            offset += 4;
+
+            List<Change> changes = new ArrayList<>();
+            for (int i = 0; i < sz; ++i) {
+                int len = buff.getInt();
+                offset += 4;
+
+                b = new byte[len];
+                buff.get(b);
+                offset += len;
+                Change c = deserialize(b);
+                changes.add(c);
+            }
+
+            changesMap.put(it, changes);
+        }
+
+        return changesMap;
+		
+	}
 }

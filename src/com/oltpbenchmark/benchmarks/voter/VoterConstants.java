@@ -27,13 +27,27 @@ public abstract class VoterConstants {
 	public static final String TABLENAME_VOTES = "VOTES";
 	public static final String TABLENAME_LOCATIONS = "AREA_CODE_STATE";
 	
+	public static final String WB_TABLENAME_CONTESTANTS = "WB_CONTESTANTS";
+	public static final String WB_TABLENAME_VOTES = "WB_VOTES";
+	public static final String WB_TABLENAME_LOCATIONS = "WB_AREA_CODE_STATE";
 	// Initialize some common constants and variables
     public static final String CONTESTANT_NAMES_CSV = "Edwina Burnam,Tabatha Gehling,Kelly Clauss,Jessie Alloway," +
 											   "Alana Bregman,Jessie Eichman,Allie Rogalski,Nita Coster," +
 											   "Kurt Walser,Ericka Dieter,Loraine NygrenTania Mattioli";
     public static final String TABLENAME_CONTESTANTS_KEY = TABLENAME_CONTESTANTS+",%s";
-    public static final String TABLENAME_VOTES_KEY = TABLENAME_VOTES+",%s";
+    public static final String TABLENAME_VOTES_KEY = TABLENAME_VOTES+",%s"+",%s";
     public static final String TABLENAME_LOCATIONS_key = TABLENAME_LOCATIONS+",%s";
+    
+    public static final String TABLENAME_INSERT_VOTES_KEY= TABLENAME_VOTES+",%s";
+    
+    public static final String WB_TABLENAME_CONTESTANTS_KEY = WB_TABLENAME_CONTESTANTS+",%s";
+    public static final String WB_TABLENAME_VOTES_KEY = WB_TABLENAME_VOTES+",%s"+",%s";
+    public static final String WB_TABLENAME_LOCATIONS_key = WB_TABLENAME_LOCATIONS+",%s";
+    
+    public static final String WB_TABLENAME_INSERT_VOTES_KEY= WB_TABLENAME_VOTES+",%s";
+    
+    
+    
     
     
     
