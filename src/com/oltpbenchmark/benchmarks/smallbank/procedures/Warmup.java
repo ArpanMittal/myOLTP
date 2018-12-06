@@ -12,6 +12,7 @@ import com.meetup.memcached.SockIOPool;
 import com.oltpbenchmark.benchmarks.Config;
 import com.oltpbenchmark.benchmarks.smallbank.SmallBankBenchmark;
 import com.oltpbenchmark.benchmarks.smallbank.SmallBankCacheStore;
+import com.oltpbenchmark.benchmarks.smallbank.SmallBankConstants;
 import com.oltpbenchmark.benchmarks.smallbank.SmallBankWorker;
 import com.oltpbenchmark.benchmarks.smallbank.SmallBankWriteBack;
 import com.usc.dblab.cafe.WriteBack;
@@ -26,7 +27,7 @@ public class Warmup {
     static SmallBankBenchmark bench;
     static SmallBankWorker worker;
     static Random rand = new Random();
-    static final int DB_SIZE = 1000000;
+    static final int DB_SIZE = SmallBankConstants.NUM_ACCOUNTS;
     
     public static void main(String[] args) {    
 //        String dbip = "168.62.24.93";
@@ -60,7 +61,7 @@ public class Warmup {
         for (int i = 0; i < nthreads; ++i) {
             int st = i*perThread;
             int end = (i+1)*perThread;
-            threads[i] = new WarmupThread(st, end, dbip, caches);
+            threads[i] = new WarmupThread(st, end, dbip, caches, dbname, dbpass);
             threads[i].start();
         }
         
@@ -85,13 +86,10 @@ class WarmupThread extends Thread {
     GetAccount procGetAcct = new GetAccount();
 
     
-    public WarmupThread(int start, int end, String dbip, String[] caches) {
+    public WarmupThread(int start, int end, String dbip, String[] caches, String dbname, String dbpass) {
         try {
-//            conn = DriverManager.getConnection(
-//                    "jdbc:mysql://168.62.24.93:3306/smallbank?serverTimezone=UTC&amp;useSSL=false&amp;rewriteBatchedStatements=true", 
-//                    "user", "123456");
-            conn = DriverManager.getConnection(
-					"jdbc:mysql://168.62.24.93:3306/smallbank?serverTimezone=UTC&useSSL=false","user" , "123456");
+
+            conn = DriverManager.getConnection(dbip,dbname , dbpass);
             conn.setAutoCommit(false);
         } catch (SQLException e) {
             // TODO Auto-generated catch block
@@ -103,8 +101,7 @@ class WarmupThread extends Thread {
             WriteBack cacheBack = new SmallBankWriteBack(conn);
             
             cache = new NgCache(cacheStore, cacheBack, 
-                    Config.CACHE_POOL_NAME, CachePolicy.WRITE_THROUGH, 0, Stats.getStatsInstance(0),"jdbc:mysql://168.62.24.93:3306/smallbank?serverTimezone=UTC", 
-                    "user", "123456", false, 0, 0, 1);
+                    Config.CACHE_POOL_NAME, CachePolicy.WRITE_THROUGH, 0, Stats.getStatsInstance(0),dbip, dbname, dbpass, false, 0, 0, 1);
         }
         
         this.start = start;

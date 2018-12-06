@@ -91,16 +91,11 @@ public class ReadOnly_SmallBank extends SmallBankProcedure {
 //		System.out.println("Cache QUERY_ACCOUNT done.");
 
 		int start = 0; // numWarehouses *(w_id-1)+1;
-		int end = 10000; // numWarehouses * w_id;
+		int end = SmallBankConstants.NUM_ACCOUNTS; // numWarehouses * w_id;
 //		int main_end = 305000;
 		for (int i_id = start; i_id <=end ; ++i_id) {
 			try {
-//				if(i_id >=205000)
-//					i_id = 300000;
-//				else if(i_id >=105000)
-//					i_id = 200000;
-//				else if(i_id >=5000)
-//					i_id = 100000;
+
 				
 				System.out.println("account cached"+i_id);
 				cafe.startSession(null);
@@ -129,14 +124,7 @@ public class ReadOnly_SmallBank extends SmallBankProcedure {
 
 		for (int i_id = start; i_id <= end; ++i_id) {
 			try {
-//				if(i_id >=205000)
-//					i_id = 300000;
-//				else if(i_id >=105000)
-//					i_id = 200000;
-//				else if(i_id >=5000)
-//					i_id = 100000;
-//				if(i_id >=5000)
-//					i_id = 95000+i_id;
+
 				System.out.println("checking cached"+i_id);
 				cafe.startSession(null);
 
@@ -164,14 +152,7 @@ public class ReadOnly_SmallBank extends SmallBankProcedure {
 
 		for (int i_id = start; i_id <= end; ++i_id) {
 			try {
-//				if(i_id >=205000)
-//					i_id = 300000;
-//				else if(i_id >=105000)
-//					i_id = 200000;
-//				else if(i_id >=5000)
-//					i_id = 100000;
-//				if(i_id >=5000)
-//					i_id = 95000+i_id;
+
 					
 				System.out.println("saving cached"+i_id);
 				cafe.startSession(null);

@@ -30,13 +30,12 @@ public class YCSBWarmpup {
     
 
     static Random rand = new Random();
-    static final int DB_SIZE = 800000;
+    static final int DB_SIZE = YCSBConstants.RECORD_COUNT;
     
     public static void main(String[] args) {    
-//        String dbip = "168.62.24.93";
+
         String[] caches = null;
-//        String[] caches = {"168.62.24.93:11211"};
-        //caches = "168.62.24.93:11211";
+
         if (args.length >=2)
             caches = args[1].split(",");
         String dbip = args[2];
@@ -64,7 +63,7 @@ public class YCSBWarmpup {
         for (int i = 0; i < nthreads; ++i) {
             int st = i*perThread;
             int end = (i+1)*perThread;
-            threads[i] = new WarmupThread(st, end, dbip, caches);
+            threads[i] = new WarmupThread(st, end, dbip, caches, dbname, dbpass);
             threads[i].start();
         }
         
@@ -88,13 +87,10 @@ public class YCSBWarmpup {
         ReadRecord readRecord = new ReadRecord();
 
         
-        public WarmupThread(int start, int end, String dbip, String[] caches) {
+        public WarmupThread(int start, int end, String dbip, String[] caches, String dbname, String dbpass) {
             try {
-//                conn = DriverManager.getConnection(
-//                        "jdbc:mysql://168.62.24.93:3306/smallbank?serverTimezone=UTC&amp;useSSL=false&amp;rewriteBatchedStatements=true", 
-//                        "user", "123456");
-                conn = DriverManager.getConnection(
-    					"jdbc:mysql://168.62.24.93:3306/ycsb?serverTimezone=UTC&useSSL=false","user" , "123456");
+
+                conn = DriverManager.getConnection(dbip,dbname , dbpass);
                 conn.setAutoCommit(false);
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
@@ -106,8 +102,7 @@ public class YCSBWarmpup {
                 WriteBack cacheBack = new YCSBWriteBack(conn);
                 
                 cache = new NgCache(cacheStore, cacheBack, 
-                        Config.CACHE_POOL_NAME, CachePolicy.WRITE_THROUGH, 0, Stats.getStatsInstance(0),"jdbc:mysql://168.62.24.93:3306/ycsb?serverTimezone=UTC", 
-                        "user", "123456", false, 0, 0, 1);
+                        Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK, 0, Stats.getStatsInstance(0),dbip, dbname, dbpass, false, 0, 0, 1);
             }
             
             this.start = start;

@@ -30,7 +30,7 @@ static SockIOPool cacheConnectionPool;
     static VoterBenchmark bench;
     static VoterWorker worker;
     static Random rand = new Random();
-    static final int DB_SIZE = 11681;
+    static final int DB_SIZE = VoterConstants.MAX_VOTES;
     
     public static void main(String[] args) {    
         String[] caches = null;
@@ -61,7 +61,7 @@ static SockIOPool cacheConnectionPool;
         for (int i = 0; i < nthreads; ++i) {
             int st = i*perThread;
             int end = (i+1)*perThread;
-            threads[i] = new WarmupThread(st, end, dbip, caches);
+            threads[i] = new WarmupThread(st, end, dbip, caches,dbname, dbpass);
             threads[i].start();
         }
         
@@ -86,11 +86,12 @@ class WarmupThread extends Thread {
     private final PhoneCallGenerator switchboard = new PhoneCallGenerator(0,6);
 
     
-    public WarmupThread(int start, int end, String dbip, String[] caches) {
+    public WarmupThread(int start, int end, String dbip, String[] caches, String dbname, String dbpass) {
         try {
-
             conn = DriverManager.getConnection(
-					"jdbc:mysql://168.62.24.93:3306/voter?serverTimezone=UTC&useSSL=false","user" , "123456");
+                    dbip, 
+                    dbname, dbpass);
+           
             conn.setAutoCommit(false);
         } catch (SQLException e) {
             // TODO Auto-generated catch block
@@ -102,8 +103,7 @@ class WarmupThread extends Thread {
             WriteBack cacheBack = new SmallBankWriteBack(conn);
             
             cache = new NgCache(cacheStore, cacheBack, 
-                    Config.CACHE_POOL_NAME, CachePolicy.WRITE_THROUGH, 0, Stats.getStatsInstance(0),"jdbc:mysql://168.62.24.93:3306/voter?serverTimezone=UTC", 
-                    "user", "123456", false, 0, 0, 1);
+                    Config.CACHE_POOL_NAME, CachePolicy.WRITE_THROUGH, 0, Stats.getStatsInstance(0),dbip, dbname, dbpass, false, 0, 0, 1);
         }
         
         this.start = start;
@@ -125,25 +125,5 @@ class WarmupThread extends Thread {
 			}
                 
         }        
-    }
-    
-    private static String getName(long id) {
-        String name = id+"";
-        int cnt = 0;
-        
-        if (id > 0) {
-            while (id > 0) {
-                id /= 10;
-                cnt++;
-            }
-        } else {
-            cnt = 1;
-        }
-        
-        for (int i = 0; i < 64-cnt; ++i) {
-            name = "0"+name;
-        }
-        
-        return name;
     }
 }
