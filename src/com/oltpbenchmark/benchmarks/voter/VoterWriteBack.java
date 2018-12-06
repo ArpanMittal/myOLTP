@@ -5,6 +5,8 @@ import static com.oltpbenchmark.benchmarks.tpcc.TPCCConfig.DML_UPDATE_STOCK_PRE;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +18,10 @@ import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.oltpbenchmark.api.SQLStmt;
 import com.oltpbenchmark.benchmarks.ycsb.YCSBConstants;
+import com.oltpbenchmark.jdbc.AutoIncrementPreparedStatement;
+import com.oltpbenchmark.types.DatabaseType;
 import com.usc.dblab.cafe.Change;
 import com.usc.dblab.cafe.Delta;
 import com.usc.dblab.cafe.QueryResult;
@@ -33,6 +38,10 @@ public class VoterWriteBack extends WriteBack{
     private static final String DELETE = "D";
     private Statement stmt;
 	private final Connection conn;
+	private DatabaseType dbType;
+    private Map<String, SQLStmt> name_stmt_xref;
+    private final Map<SQLStmt, String> stmt_name_xref = new HashMap<SQLStmt, String>();
+    private final Map<SQLStmt, PreparedStatement> prepardStatements = new HashMap<SQLStmt, PreparedStatement>();
 	
 	public VoterWriteBack(Connection conn) {
 		// TODO Auto-generated constructor stub
@@ -68,7 +77,11 @@ public class VoterWriteBack extends WriteBack{
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+	 // Records a vote
+    public final SQLStmt insertVoteStmt = new SQLStmt(
+		"INSERT INTO VOTES (vote_id, phone_number, state, contestant_number, created) " +
+    "VALUES (?, ?, ?, ?, NOW());"
+    );
 	@Override
 	public Set<String> rationalizeRead(String query) {
 		// TODO Auto-generated method stub
@@ -185,10 +198,49 @@ public class VoterWriteBack extends WriteBack{
 	}
 
 	@Override
-	public boolean applySessions(List<Session> sess, Connection conn, Statement stmt, PrintWriter sessionWriter,
+	public boolean applySessions(List<Session> sessions, Connection conn, Statement stmt, PrintWriter sessionWriter,
 			Stats stats) throws Exception {
 		// TODO Auto-generated method stub
-		return false;
+		Map<String, String> mergeMap = new HashMap<>(); 
+		for (Session sess: sessions) {
+	            List<String> its = sess.getIdentifiers();
+	            for (int i = 0; i < its.size(); ++i) {
+	                String identifier = its.get(i);
+	                Change change = sess.getChange(i);
+	                String val = mergeMap.get(identifier);
+	                if (val == null) {
+	                    mergeMap.put(identifier, (String)change.getValue());
+	                }else {
+	                	mergeMap.put(identifier, (String)change.getValue());
+	                }
+	            }
+		 }
+		
+		PreparedStatement ps = null;
+        for (String it: mergeMap.keySet()) {
+            String val = mergeMap.get(it);
+//            char op = val.charAt(0);
+//            double amount = Double.parseDouble(val.substring(1));
+            String[] tokens = val.split(";");
+            String[] tokens2 = it.split(",");
+            String table = tokens2[0];
+            switch (table) {
+            case VoterConstants.WB_INSERT_TABLENAME_VOTES:{
+				long phoneNumber = Long.parseLong(tokens[1].split(",")[2]);
+				String state = tokens[2].split(",")[2];
+				int con_num = Integer.parseInt(tokens[3].split(",")[2]);
+				ps = this.getPreparedStatement(conn, insertVoteStmt);
+		        ps.setLong(1, Integer.parseInt(tokens[0].split(",")[2]));
+		        ps.setLong(2, phoneNumber);
+		        ps.setString(3, state);
+		        ps.setInt(4,con_num);
+		        ps.execute();
+		        break;
+            }
+        }
+        } 
+        conn.commit();
+		return true;
 	}
 
 	@Override
@@ -249,6 +301,41 @@ public class VoterWriteBack extends WriteBack{
         return buff.array();
 		
 	}
+	
+	public final PreparedStatement getPreparedStatement(Connection conn, SQLStmt stmt, Object...params) throws SQLException {
+        PreparedStatement pStmt = this.getPreparedStatementReturnKeys(conn, stmt, null);
+        for (int i = 0; i < params.length; i++) {
+            pStmt.setObject(i+1, params[i]);
+        } // FOR
+        return (pStmt);
+    }
+
+    public final PreparedStatement getPreparedStatementReturnKeys(Connection conn, SQLStmt stmt, int[] is) throws SQLException {
+        assert(this.name_stmt_xref != null) : "The Procedure " + this + " has not been initialized yet!";
+        PreparedStatement pStmt = this.prepardStatements.get(stmt);
+        if (pStmt == null) {
+            assert(this.stmt_name_xref.containsKey(stmt)) :
+                "Unexpected SQLStmt handle in " + this.getClass().getSimpleName() + "\n" + this.name_stmt_xref;
+
+            // HACK: If the target system is Postgres, wrap the PreparedStatement in a special
+            //       one that fakes the getGeneratedKeys().
+            if (is != null && this.dbType == DatabaseType.POSTGRES) {
+                pStmt = new AutoIncrementPreparedStatement(this.dbType, conn.prepareStatement(stmt.getSQL()));
+            }
+            // Everyone else can use the regular getGeneratedKeys() method
+            else if (is != null) {
+                pStmt = conn.prepareStatement(stmt.getSQL(), is);
+            }
+            // They don't care about keys
+            else {
+                pStmt = conn.prepareStatement(stmt.getSQL());
+            }
+            this.prepardStatements.put(stmt, pStmt);
+        }
+        assert(pStmt != null) : "Unexpected null PreparedStatement for " + stmt;
+        return (pStmt);
+    }
+    
 
 	@Override
 	public int getTeleWPartition(String sessId) {
@@ -291,4 +378,28 @@ public class VoterWriteBack extends WriteBack{
         return changesMap;
 		
 	}
+	
+	 @Override
+	    public Map<Interval1D, String> getImpactedRanges(Session sess) {
+//	        List<Change> changes = sess.getChanges();
+	        Map<Interval1D, String> res = new HashMap<>();
+//	        for (Change c: changes) {
+//	            String str = (String)c.getValue();
+//	            if (str.contains("S_QUANTITY")) {
+//	                String[] fs = str.split(";");
+//	                for (String f: fs) {
+//	                    if (f.contains("S_QUANTITY")) {
+//	                        fs = f.split(",");
+//	                        int p1 = Integer.parseInt(fs[2]);
+//	                        res.put(new Interval1D(p1, p1), sess.getSid());
+//	                        int p2 = Integer.parseInt(fs[3]);
+//	                        res.put(new Interval1D(p2, p2), sess.getSid());
+//	                        return res;
+//	                    }
+//	                }
+//	            }
+//	        }
+	        
+	        return res;
+	    }
 }

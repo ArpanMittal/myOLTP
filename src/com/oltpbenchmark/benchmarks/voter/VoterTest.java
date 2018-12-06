@@ -61,7 +61,9 @@ public class VoterTest {
 	private static void verifyCacheHit() {
 		// TODO Auto-generated method stub
 		 try {
-			 vote.run(conn, 1, Long.parseLong("6362137675"),1,2,cache);
+			 for(int i=20875;i<20878;i++) {
+				 vote.run(conn, i, Long.parseLong("6362137675"),1,9,cache);
+			 }
 			 System.out.println(Stats.getAllStats().toString(2));
 		 }catch (SQLException e) {
 	            // TODO Auto-generated catch block

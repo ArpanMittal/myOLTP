@@ -53,8 +53,10 @@ public abstract class VoterConstants {
     public static final String UPDATE_TABLENAME_VOTES_KEY = UPDATE_TABLENAME_VOTES +",%s"+",%s"+",%s";
     
     public static final String MEM_INSER_TABLENAME_VOTES_KEY = INSER_TABLENAME_VOTES+",%s";
+    
     public static final String WB_INSER_TABLENAME_VOTES_KEY = "WB"+INSER_TABLENAME_VOTES+",%s";
     
+    public static final String WB_INSERT_TABLENAME_VOTES = "WB"+INSER_TABLENAME_VOTES;
     public static final String WB_UPDATE_TABLENAME_VOTES = "WB_U_VOTES";
     
     public static final String WB_UPDATE_TABLENAME_VOTES_KEY = WB_UPDATE_TABLENAME_VOTES +",%s"+",%s";
