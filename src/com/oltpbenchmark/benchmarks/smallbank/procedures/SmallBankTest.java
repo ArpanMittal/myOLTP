@@ -65,13 +65,13 @@ public class SmallBankTest {
         WriteBack cacheBack = new SmallBankWriteBack(conn);
         
         cache = new NgCache(cacheStore, cacheBack, 
-                Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK,1 , Stats.getStatsInstance(0), "jdbc:mysql://168.62.24.93:3306/smallbank?serverTimezone=UTC", 
+                Config.CACHE_POOL_NAME, CachePolicy.WRITE_BACK,0 , Stats.getStatsInstance(0), "jdbc:mysql://168.62.24.93:3306/smallbank?serverTimezone=UTC", 
                 "user", "123456", false, 0, 0, 1); 
         
         System.out.println(getName(1));
         System.out.println(getName(322));
         System.out.println(getName(1123));
-//        verifyCacheHit();
+        verifyCacheHit();
 //        System.out.println("====== Verify DepositChecking");
 //        verifyDepositChecking();
 //        System.out.println("====== Verify WriteCheck");

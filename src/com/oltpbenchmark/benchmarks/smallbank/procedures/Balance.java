@@ -119,7 +119,7 @@ public class Balance extends Procedure {
 	            throw new UserAbortException(msg);
 			}
 			total = savingsRes.getBal() + checkingRes.getBal();
-			System.out.println("Saving="+savingsRes.getBal()+"__"+"Checking ="+checkingRes.getBal());
+			//System.out.println("Saving="+savingsRes.getBal()+"__"+"Checking ="+checkingRes.getBal());
 			conn.commit();
 			
 			try {

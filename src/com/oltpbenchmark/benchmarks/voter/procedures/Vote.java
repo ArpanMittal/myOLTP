@@ -121,7 +121,8 @@ public class Vote extends Procedure {
         // the "XX" fake state (those votes will not appear on the Live Statistics dashboard,
         // but are tracked as legitimate instead of invalid, as old clients would mostly get
         // it wrong and see all their transactions rejected).
-        final String state = rs.next() ? rs.getString(1) : "XX";
+        final String state = rs.next() ? rs.getString(2) : "XX";
+//        System.out.println("State is"+state);
         rs.close();
 
         ps = getPreparedStatement(conn, insertVoteStmt);

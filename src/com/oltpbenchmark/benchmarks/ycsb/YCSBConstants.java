@@ -18,7 +18,7 @@ package com.oltpbenchmark.benchmarks.ycsb;
 
 public final class YCSBConstants {
 
-    public static final int RECORD_COUNT = 1000;
+    public static final int RECORD_COUNT = 800000;
     
     public static final int NUM_FIELDS = 10;
     

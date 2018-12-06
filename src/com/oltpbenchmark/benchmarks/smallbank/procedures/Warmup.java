@@ -55,7 +55,7 @@ public class Warmup {
             System.out.println("No cache is provided.");
         }
         
-        int nthreads = 100;
+        int nthreads = 1000;
         int perThread = DB_SIZE / nthreads;
         WarmupThread[] threads = new WarmupThread[nthreads];
         for (int i = 0; i < nthreads; ++i) {
