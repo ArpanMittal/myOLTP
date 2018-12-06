@@ -378,14 +378,16 @@ public class DBWorkload {
             tokens[7] = TPCCConfig.configDistPerWhse+"";
             tokens[8] = TPCCConfig.configCustPerDist+"";
             tokens[9] = "true";
-            //ReadOnly_SmallBank.main(tokens);
-//            Warmup.main(tokens);
-            //For YCSB
-            //YCSBWarmpup.main(tokens);
-            //For Voter
-            VoterWarmpup.main(tokens);
-//            if(TPCCConfig.warmup)
-//            	ReadOnly.main(tokens);
+            String val = argsLine.getOptionValue('b');
+            if(val.equals("smallbank"))
+            	Warmup.main(tokens);
+            else if(val.equals("ycsb"))
+            	YCSBWarmpup.main(tokens);
+            else if(val.equals("voter"))
+            	VoterWarmpup.main(tokens);
+            else //for tpcc
+            	ReadOnly.main(tokens);
+  
          
         }
         
