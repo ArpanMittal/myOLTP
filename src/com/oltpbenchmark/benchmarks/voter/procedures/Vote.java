@@ -144,11 +144,12 @@ public long run(Connection conn, long voteId, long phoneNumber, int contestantNu
 		if(contestantResut == null) {
 			return ERR_INVALID_CONTESTANT; 
 		}
+
 		String getVoterCount = String.format(VoterConstants.TABLENAME_VOTES_KEY, phoneNumber,maxVotesPerPhoneNumber);
 		VoteCountResult voterCountResult = (VoteCountResult)cafe.readStatement(getVoterCount);
 		if(voterCountResult == null || Integer.parseInt(voterCountResult.getVote_count())>maxVotesPerPhoneNumber)
 			return ERR_VOTER_OVER_VOTE_LIMIT;
-		System.out.println(voterCountResult.getVote_count());
+
 		
 		String getState = String.format(VoterConstants.TABLENAME_LOCATIONS_KEY,(short)(phoneNumber / 10000000l) );
 		StateResult stateResult = (StateResult)cafe.readStatement(getState);
@@ -157,6 +158,7 @@ public long run(Connection conn, long voteId, long phoneNumber, int contestantNu
 			state = "XX";
 		else
 			state = stateResult.getState_name();
+
 		
 		String insertVoteKey = String.format(VoterConstants.INSER_TABLENAME_VOTES_KEY, voteId, phoneNumber,state,contestantNumber);
 		
@@ -189,11 +191,58 @@ public long run(Connection conn, long voteId, long phoneNumber, int contestantNu
 		throw new UserAbortException("Some error happens. "+ e.getMessage());
     
 	}
+	
+        return VOTE_SUCCESSFUL;
+	
+		
+    }
+    
+
+// For Cache warmup
+public long warmuprun(Connection conn, long voteId, long phoneNumber, int contestantNumber, long maxVotesPerPhoneNumber, NgCache cafe) throws SQLException {
+	try {
+		cafe.startSession("Vote");
+		String getContestant = String.format(VoterConstants.TABLENAME_CONTESTANTS_KEY, contestantNumber);
+		ContestantResult contestantResut = (ContestantResult)cafe.readStatement(getContestant);
+		if(contestantResut == null) {
+			return ERR_INVALID_CONTESTANT; 
+		}
+
+		String getVoterCount = String.format(VoterConstants.TABLENAME_VOTES_KEY, phoneNumber,maxVotesPerPhoneNumber);
+		VoteCountResult voterCountResult = (VoteCountResult)cafe.readStatement(getVoterCount);
+		if(voterCountResult == null || Integer.parseInt(voterCountResult.getVote_count())>maxVotesPerPhoneNumber)
+			return ERR_VOTER_OVER_VOTE_LIMIT;
+		
+		String getState = String.format(VoterConstants.TABLENAME_LOCATIONS_KEY,(short)(phoneNumber / 10000000l) );
+		StateResult stateResult = (StateResult)cafe.readStatement(getState);
+		String state;
+		if(stateResult == null)
+			state = "XX";
+		else
+			state = stateResult.getState_name();
+		
+		  if (cafe.validateSession()) {
+              conn.commit();
+              cafe.commitSession();
+          } else {
+              conn.rollback();
+              cafe.abortSession();
+          }
+	}catch (Exception e) {
+		conn.rollback();
+		try {
+			cafe.abortSession();
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		throw new UserAbortException("Some error happens. "+ e.getMessage());
+    
+	}
 	System.out.println("heelo"+VOTE_SUCCESSFUL+"=true");
         return VOTE_SUCCESSFUL;
 	
 //	return maxVotesPerPhoneNumber;		
     }
-    
     
 }

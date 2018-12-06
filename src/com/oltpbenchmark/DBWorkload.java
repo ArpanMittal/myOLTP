@@ -52,6 +52,7 @@ import com.oltpbenchmark.benchmarks.smallbank.procedures.ReadOnly_SmallBank;
 import com.oltpbenchmark.benchmarks.smallbank.procedures.Warmup;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCConfig;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.ReadOnly;
+import com.oltpbenchmark.benchmarks.voter.VoterWarmpup;
 import com.oltpbenchmark.benchmarks.ycsb.YCSBWarmpup;
 import com.oltpbenchmark.types.DatabaseType;
 import com.oltpbenchmark.util.ClassUtil;
@@ -380,7 +381,9 @@ public class DBWorkload {
             //ReadOnly_SmallBank.main(tokens);
 //            Warmup.main(tokens);
             //For YCSB
-            YCSBWarmpup.main(tokens);
+            //YCSBWarmpup.main(tokens);
+            //For Voter
+            VoterWarmpup.main(tokens);
 //            if(TPCCConfig.warmup)
 //            	ReadOnly.main(tokens);
          
