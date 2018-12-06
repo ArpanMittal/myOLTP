@@ -87,7 +87,7 @@ public class VoterCacheStore extends CacheStore{
     	        map.put(String.format(VoterConstants.MEM_INSER_TABLENAME_VOTES_KEY, tokens[1]), d);  
     	        break;
         	}case VoterConstants.UPDATE_TABLENAME_VOTES:{
-        		s = String.format("%s,count,%s", SET,tokens[3]);
+        		s = String.format("%s,o_vote_count,%s", SET,tokens[3]);
         		d = new Delta(Change.TYPE_SET, s);
         		map.put(String.format(VoterConstants.TABLENAME_VOTES_KEY, tokens[1], tokens[2]),d);
         		break;
@@ -269,6 +269,7 @@ public class VoterCacheStore extends CacheStore{
 		if (delta.getType() != Delta.TYPE_RMW && delta.getType() != Delta.TYPE_SET) {
             throw new NotImplementedException("This function applied to a change of type RMW only.");
         }
+		System.out.println("inside apply delta");
 		Object cacheVal = cacheEntry.getValue();
         if (cacheVal instanceof HashMap) {
             HashMap map = (HashMap)cacheVal;

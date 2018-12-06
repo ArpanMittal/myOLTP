@@ -164,7 +164,7 @@ public long run(Connection conn, long voteId, long phoneNumber, int contestantNu
         assert(success) :
             String.format("Failed to insert %s for Votes #%s", voteId, phoneNumber);
         
-        String updateVoterCount = String.format(VoterConstants.UPDATE_TABLENAME_VOTES, voteId, maxVotesPerPhoneNumber,Integer.parseInt(voterCountResult.getVote_count())+1);
+        String updateVoterCount = String.format(VoterConstants.UPDATE_TABLENAME_VOTES_KEY, phoneNumber, maxVotesPerPhoneNumber,Integer.parseInt(voterCountResult.getVote_count())+1);
         success = cafe.writeStatement(updateVoterCount);
 		assert(success):
 			String.format("Failed to increment update for Votes #%s", phoneNumber);

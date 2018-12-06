@@ -128,7 +128,7 @@ public class VoterWriteBack extends WriteBack{
 	       
 	        break;
     	}case VoterConstants.UPDATE_TABLENAME_VOTES:{
-    		String s = String.format("%s,count,%s", SET, tokens[3]);
+    		String s = String.format("%s,o_vote_count,%s", SET, tokens[3]);
     		c = new Change(Change.TYPE_SET,s);
     		it = String.format(String.format(VoterConstants.WB_UPDATE_TABLENAME_VOTES_KEY, tokens[1], tokens[2]));
     	}
