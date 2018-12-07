@@ -45,7 +45,7 @@ public class DeleteRecord extends Procedure{
 //        stmt.setInt(1, keyname);          
 //        return stmt.executeUpdate();
         
-//        while (true) {
+        while (true) {
             try {
             	cafe.startSession("DeleteRecord");
             	String deleteOrder = String.format(YCSBConstants.DELETE_QUERY_KEY, keyname);
@@ -85,5 +85,5 @@ public class DeleteRecord extends Procedure{
                 }
         }
     }
-//   }
+   }
 }

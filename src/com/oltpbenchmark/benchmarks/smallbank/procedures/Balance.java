@@ -125,6 +125,7 @@ public class Balance extends Procedure {
 			
 			try {
 				cafe.commitSession();
+				break;
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

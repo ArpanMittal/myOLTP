@@ -122,7 +122,7 @@ public class Vote extends Procedure {
         // but are tracked as legitimate instead of invalid, as old clients would mostly get
         // it wrong and see all their transactions rejected).
         final String state = rs.next() ? rs.getString(2) : "XX";
-//        System.out.println("State is"+state);
+        System.out.println("State is"+state);
         rs.close();
 
         ps = getPreparedStatement(conn, insertVoteStmt);

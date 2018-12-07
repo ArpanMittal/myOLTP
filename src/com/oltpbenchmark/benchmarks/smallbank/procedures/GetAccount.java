@@ -31,6 +31,7 @@ public class GetAccount extends Procedure {
             conn.commit();
             try {
                 cafe.commitSession();
+                break;
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();

@@ -173,6 +173,7 @@ public class Amalgamate extends Procedure {
 			if (cafe.validateSession()) {
                 conn.commit();
                 cafe.commitSession();
+                break;
             } else {
                 conn.rollback();
                 cafe.abortSession();

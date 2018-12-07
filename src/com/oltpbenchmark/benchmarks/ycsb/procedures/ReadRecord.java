@@ -48,7 +48,8 @@ public class ReadRecord extends Procedure{
     }
     
     public void run(Connection conn, String keyname, NgCache cafe, String results[]) throws SQLException {
-    	
+    	int retry = 0;
+    	while (true) {
     	try {
 			cafe.startSession("Read");
 			String getUser = String.format(YCSBConstants.QUERY_KEY, keyname);
@@ -75,6 +76,11 @@ public class ReadRecord extends Procedure{
 			throw new UserAbortException("Some error happens. "+ e.getMessage());
         
     	}
+    	retry++;
+		if(retry>10)
+			break;
+    	}
+    	cafe.getStats().incr("retry"+retry);
     }
 
 }

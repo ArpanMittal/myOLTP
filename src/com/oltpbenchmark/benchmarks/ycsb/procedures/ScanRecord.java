@@ -50,7 +50,10 @@ public class ScanRecord extends Procedure{
     }
     
     public void run(Connection conn, int start,NgCache cafe, int count, List<String[]> results) throws SQLException {
+    	 int retry = 0;
+     	while (true) {
     	for(int i=start;i<start+count;i++) {
+    		
     		try {
     			cafe.startSession("Read");
     			String getUser = String.format(YCSBConstants.QUERY_KEY, i);
@@ -82,7 +85,13 @@ public class ScanRecord extends Procedure{
     			throw new UserAbortException("Some error happens. "+ e.getMessage());
             
         	}
+    		
         }
+    	retry++;
+		if(retry>10)
+			break;
+    }
+    cafe.getStats().incr("retry"+retry);
     	
     }
     

@@ -102,6 +102,7 @@ public class DepositChecking extends Procedure {
     			if (cafe.validateSession()) {
                     conn.commit();
                     cafe.commitSession();
+                    break;
                 } else {
                     conn.rollback();
                     cafe.abortSession();
