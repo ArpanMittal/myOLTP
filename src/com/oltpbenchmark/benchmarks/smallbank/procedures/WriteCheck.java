@@ -116,6 +116,8 @@ public class WriteCheck extends Procedure {
     }
 
 	public void run(Connection conn, String custName, double amount, NgCache cafe, Map<String, Object> tres) throws SQLException {
+		 int retry = 0;
+	    	while (true) {
 		try {
 			cafe.startSession("WriteCheck");
 			
@@ -174,7 +176,12 @@ public class WriteCheck extends Procedure {
 			}
 			throw new UserAbortException("Some error happens. "+ e.getMessage());
 		}
-        
+		retry++;
+		if(retry>10)
+			break;
+	    	
+	    	}
+	    	cafe.getStats().incr("retry"+retry);
         return;		
 	}
 

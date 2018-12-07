@@ -116,6 +116,8 @@ public class SendPayment extends Procedure {
 
     public void run(Connection conn, long sendAcct, long destAcct,
     		double amount, NgCache cafe, Map<String, Object> tres) throws SQLException {
+    	int retry = 0;
+    	while (true) {
     	try {
 			cafe.startSession("SendPayment");
 			
@@ -187,6 +189,11 @@ public class SendPayment extends Procedure {
 			}
 			throw new UserAbortException("Some error happens. "+ e.getMessage());
 		}
+    	retry++;
+		if(retry>10)
+			break;
+    }
+    	cafe.getStats().incr("retry"+retry);
 	}
 
     private void generateLog(Map<String, Object> tres, long sendAcct,

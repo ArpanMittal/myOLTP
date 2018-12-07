@@ -81,7 +81,8 @@ public class DepositChecking extends Procedure {
     }
 
     public void run(Connection conn, String custName, double amount, NgCache cafe, Map<String, Object> tres) throws SQLException {
-        while (true) {
+        int retry = 0;
+    	while (true) {
     		try {
     			cafe.startSession("DepositChecking");
     			
@@ -121,7 +122,11 @@ public class DepositChecking extends Procedure {
     			if (!(e instanceof COException))
     			    throw new UserAbortException("Some error happens. "+ e.getMessage());
     		}
+    		retry++;
+    		if(retry>10)
+    			break;
         }
+    	cafe.getStats().incr("retry"+retry);
 	}
 
     private void generateLog(Map<String, Object> tres, long custId,

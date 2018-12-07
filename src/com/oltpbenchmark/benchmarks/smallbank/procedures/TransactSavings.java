@@ -108,7 +108,9 @@ public class TransactSavings extends Procedure {
 
     public void run(Connection conn, String custName, double amount, 
             NgCache cafe, Map<String, Object> tres) throws SQLException {
-        try {
+    	int retry = 0;
+    	while (true) {
+    	try {
             cafe.startSession("TransactSavings");
             
             // First convert the custName to the acctId
@@ -170,6 +172,11 @@ public class TransactSavings extends Procedure {
             }
             throw new UserAbortException("Some error happens. "+ e.getMessage());
         }
+    	retry++;
+		if(retry>10)
+			break;
+    	}
+    	cafe.getStats().incr("retry"+retry);
 	}
     
 

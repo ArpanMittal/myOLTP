@@ -19,6 +19,8 @@ public class GetAccount extends Procedure {
     
     public void run(Connection conn, long custId, 
             NgCache cafe, Map<String, Object> tres) throws SQLException {
+    	 int retry = 0;
+     	while (true) {
         try {
             cafe.startSession("GetAccount");
             
@@ -42,7 +44,13 @@ public class GetAccount extends Procedure {
                 e1.printStackTrace();
             }
             throw new UserAbortException("Some error happens. "+ e.getMessage());
-        }       
+        } 
+        retry++;
+		if(retry>10)
+			break;
+    }
+        
+        cafe.getStats().incr("retry"+retry);
     }
 
     public void run(Connection conn, int custId, Map<String, Object> tres) throws SQLException {

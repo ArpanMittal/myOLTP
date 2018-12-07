@@ -131,6 +131,9 @@ public class Amalgamate extends Procedure {
     }
 
 	public void run(Connection conn, long custId0, long custId1, NgCache cafe, Map<String, Object> tres) throws SQLException {
+		int retry =0 ;
+		while (true) {
+             
 		try {
 			cafe.startSession("Amalgamate");
 			
@@ -175,6 +178,7 @@ public class Amalgamate extends Procedure {
                 cafe.abortSession();
             }
 			
+			
 			generateLog(tres, custId0, custId1, sr.getBal(), cr.getBal(), 0d, total);
 		} catch (Exception e) {
 			conn.rollback();
@@ -185,7 +189,12 @@ public class Amalgamate extends Procedure {
 				e1.printStackTrace();
 			}
 			throw new UserAbortException("Some error happens. "+ e.getMessage());
-		}		
+		}	
+		retry++;
+		if(retry>10)
+			break;
+       }
+		cafe.getStats().incr("retry"+retry);
 	}
 
     private void generateLog(Map<String, Object> tres, long custid0, long custid1, 

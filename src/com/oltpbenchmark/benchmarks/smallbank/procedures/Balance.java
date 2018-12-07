@@ -93,7 +93,8 @@ public class Balance extends Procedure {
     
     public double run(Connection conn, String custName, NgCache cafe, Map<String, Object> tres) throws SQLException {
     	double total = 0.0;
-    	
+    	int retry =0 ;
+		while (true) {
 		try {
 			cafe.startSession("Balance");
 			
@@ -141,6 +142,10 @@ public class Balance extends Procedure {
 			}
 			throw new UserAbortException("Some error happens. "+ e.getMessage());
 		}
+		if(retry>10)
+			break;
+       }
+		cafe.getStats().incr("retry"+retry);
 		
 		return total;
     }
