@@ -143,7 +143,7 @@ public class Balance extends Procedure {
 			}
 			throw new UserAbortException("Some error happens. "+ e.getMessage());
 		}
-		if(retry>10)
+		if(retry++>10)
 			break;
        }
 		cafe.getStats().incr("retry"+retry);

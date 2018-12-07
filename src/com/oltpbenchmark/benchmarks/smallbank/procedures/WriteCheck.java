@@ -178,7 +178,7 @@ public class WriteCheck extends Procedure {
 			throw new UserAbortException("Some error happens. "+ e.getMessage());
 		}
 		retry++;
-		if(retry>10)
+		if(retry>10000)
 			break;
 	    	
 	    	}

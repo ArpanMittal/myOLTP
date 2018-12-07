@@ -138,6 +138,8 @@ public class Vote extends Procedure {
     
     
 public long run(Connection conn, long voteId, long phoneNumber, int contestantNumber, long maxVotesPerPhoneNumber, NgCache cafe) throws SQLException {
+	int retry =0 ;
+	while (true) {
 	try {
 		cafe.startSession("Vote");
 		String getContestant = String.format(VoterConstants.TABLENAME_CONTESTANTS_KEY, contestantNumber);
@@ -176,6 +178,7 @@ public long run(Connection conn, long voteId, long phoneNumber, int contestantNu
 		  if (cafe.validateSession()) {
               conn.commit();
               cafe.commitSession();
+              break;
           } else {
               conn.rollback();
               cafe.abortSession();
@@ -192,7 +195,9 @@ public long run(Connection conn, long voteId, long phoneNumber, int contestantNu
 		throw new UserAbortException("Some error happens. "+ e.getMessage());
     
 	}
-	
+	if(retry++>10)
+		break;
+}
         return VOTE_SUCCESSFUL;
 	
 		
