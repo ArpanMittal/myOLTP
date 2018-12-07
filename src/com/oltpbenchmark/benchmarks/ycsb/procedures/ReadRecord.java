@@ -54,11 +54,23 @@ public class ReadRecord extends Procedure{
 			cafe.startSession("Read");
 			String getUser = String.format(YCSBConstants.QUERY_KEY, keyname);
 			UserResult user_result = (UserResult) cafe.readStatement(getUser);
-
+			//results[0] = keyname;
+			results[0] = user_result.getField_01();
+			results[1] = user_result.getField_02();
+			results[2] = user_result.getField_03();
+			results[3] = user_result.getField_04();
+			results[4] = user_result.getField_05();
+			results[5] = user_result.getField_06();
+			results[6] = user_result.getField_07();
+			results[7] = user_result.getField_08();
+			results[8] = user_result.getField_09();
+			results[9] = user_result.getField_10();
+			
 			conn.commit();
 			
 			try {
 				cafe.commitSession();
+				break;
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

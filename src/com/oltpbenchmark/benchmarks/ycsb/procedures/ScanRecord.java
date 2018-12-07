@@ -63,11 +63,12 @@ public class ScanRecord extends Procedure{
 //            	for(int j = 1; j <= YCSBConstants.NUM_FIELDS; j++)
 //            		data[j] = user_result.
 //            	results.add(data);
-    			System.out.println(user_result.getField_01()+","+user_result.getField_02()+","+user_result.getField_03()+","+user_result.getField_04()+","+user_result.getField_09());
+    			//System.out.println(user_result.getField_01()+","+user_result.getField_02()+","+user_result.getField_03()+","+user_result.getField_04()+","+user_result.getField_09());
     			conn.commit();
     			
     			try {
     				cafe.commitSession();
+    				break;
     			} catch (Exception e) {
     				// TODO Auto-generated catch block
     				e.printStackTrace();
