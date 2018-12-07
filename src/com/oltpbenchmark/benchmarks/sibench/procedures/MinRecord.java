@@ -26,6 +26,12 @@ import java.util.Map;
 
 import com.oltpbenchmark.api.Procedure;
 import com.oltpbenchmark.api.SQLStmt;
+import com.oltpbenchmark.api.Procedure.UserAbortException;
+import com.oltpbenchmark.benchmarks.sibench.MinResult;
+import com.oltpbenchmark.benchmarks.sibench.SIConstants;
+import com.oltpbenchmark.benchmarks.ycsb.YCSBConstants;
+import com.oltpbenchmark.benchmarks.ycsb.results.UserResult;
+import com.usc.dblab.cafe.NgCache;
 
 public class MinRecord extends Procedure{
     public final SQLStmt minStmt = new SQLStmt(
@@ -43,5 +49,35 @@ public class MinRecord extends Procedure{
         r.close();
 	conn.commit();
         return minId;
+    }
+    
+    public MinResult run(Connection conn, NgCache cafe) throws SQLException {
+    	try {
+			cafe.startSession("MinRecord");
+			String getUser = String.format(SIConstants.QUERY_MIN);
+			MinResult min_result = (MinResult) cafe.readStatement(getUser);
+
+			conn.commit();
+			
+			try {
+				cafe.commitSession();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return min_result;
+			
+    	}catch (Exception e) {
+//		    e.printStackTrace(System.out);
+			conn.rollback();
+			try {
+				cafe.abortSession();
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			throw new UserAbortException("Some error happens. "+ e.getMessage());
+        
+    	}
     }
 }

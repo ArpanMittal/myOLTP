@@ -23,5 +23,23 @@ public abstract class SIConstants {
     public static final int RECORD_COUNT = 10;
     
     public static final int configCommitCount = 10;
-
+    
+    public static final String QUERY_MIN = "Q_MIN";
+    public static final String QUERY_MEM_MIN = "Q_MEM_MIN";
+    public static final String WB_QUERY_MEM_MIN = "WB_Q_MEM_MIN";
+    public static final String QUERY_UP_MEM_MIN_KEY = QUERY_MIN +",%s" + ",%s";
+    public static final String WB_QUERY_UP_MEM_MIN_KEY = "WB"+QUERY_MIN +",%s" + ",%s";
+    
+    public static final String UPDATE_VALUE = "U_VAL";
+    public static final String UPDATE_VALUE_KEY = UPDATE_VALUE +",%s";
+    public static final String UPDATE_VALUE_INCR_KEY = UPDATE_VALUE +",%s" + ",%s";
+    public static final String WB_UPDATE_VALUE_KEY ="WB"+ UPDATE_VALUE +",%s";
+    
+    
+    public static final String READ_VALUE = "Q_TABLE";
+    public static final String READ_VALUE_KEY = READ_VALUE +",%s";
+    public static final String WB_READ_VALUE_KEY = "WB"+READ_VALUE_KEY;
+    
+    
+    
 }
