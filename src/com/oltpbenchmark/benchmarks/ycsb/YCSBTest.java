@@ -77,7 +77,7 @@ public class YCSBTest {
 	        try {
 	        	String results[] = new String[20];
 	        	ArrayList<String[]> result_scan = new ArrayList<String[]>();
-	            for (int i = 200; i <300; i++) {
+	            for (int i = 1; i <2; i++) {
 	            	//readRecord.run(conn, 2, results);
 	                //readRecord.run(conn, "10", cache);
 	                String[] val = {"99","22","23","24","25","26","27","28","29","99"};
