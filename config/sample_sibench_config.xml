@@ -20,7 +20,7 @@
     <terminals>2</terminals>
     <works>
         <work>
-          <time>300</time>
+          <time>60</time>
           <rate>unlimited</rate>
           <weights>50,50</weights>
         </work>

@@ -95,5 +95,23 @@ public class UpdateRecord extends Procedure{
     		}
         }
     }
+    
+    public void warmupRun(Connection conn, int id, NgCache cafe) throws SQLException {
+    	try {
+    		  String userValue = String.format(SIConstants.UPDATE_VALUE_KEY,id);
+  	        MinResult user_result = (MinResult)cafe.readStatement(userValue);
+    	}catch (Exception e) {
+//		    e.printStackTrace(System.out);
+			conn.rollback();
+			try {
+				cafe.abortSession();
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			throw new UserAbortException("Some error happens. "+ e.getMessage());
+        
+    	}
+    }
 
 }

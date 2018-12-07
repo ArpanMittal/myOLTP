@@ -48,6 +48,7 @@ import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.TransactionTypes;
 import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.Config;
+import com.oltpbenchmark.benchmarks.sibench.SibenchWarmup;
 import com.oltpbenchmark.benchmarks.smallbank.procedures.ReadOnly_SmallBank;
 import com.oltpbenchmark.benchmarks.smallbank.procedures.Warmup;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCConfig;
@@ -385,6 +386,8 @@ public class DBWorkload {
             	YCSBWarmpup.main(tokens);
             else if(val.equals("voter"))
             	VoterWarmpup.main(tokens);
+            else if(val.equals("sibench"))
+            	SibenchWarmup.main(tokens);
             else //for tpcc
             	ReadOnly.main(tokens);
   

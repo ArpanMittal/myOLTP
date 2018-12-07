@@ -20,8 +20,8 @@
     <terminals>10</terminals>
     <works>
         <work>
-          <time>300</time>
-          <rate>10000</rate>
+          <time>60</time>
+          <rate>unlimited</rate>
           <weights>100</weights>
         </work>
     </works>
