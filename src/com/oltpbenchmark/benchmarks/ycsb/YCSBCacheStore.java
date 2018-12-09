@@ -180,7 +180,7 @@ public class YCSBCacheStore extends CacheStore {
         	
             //stmt = this.getPreparedStatement(conn, READ_STMT);
             String[] results = new String[11];
-            this.readRecord.run(conn, Integer.parseInt(tokens[1]), results);
+            this.readRecord.runWrite(conn, Integer.parseInt(tokens[1]), results);
 //            int temp = results.length;
             //stmt.setInt(1, Integer.parseInt(tokens[1]));  
 //            stmt.setInt(1, 2);
