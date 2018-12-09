@@ -30,7 +30,7 @@ public class YCSBWarmpup {
     
 
     static Random rand = new Random();
-    static final int DB_SIZE = YCSBConstants.RECORD_COUNT;
+    static final int DB_SIZE = 1000;
     
     public static void main(String[] args) {    
 
@@ -57,12 +57,13 @@ public class YCSBWarmpup {
             System.out.println("No cache is provided.");
         }
         
-        int nthreads = 10;
+        int nthreads = 1;
         int perThread = DB_SIZE / nthreads;
         WarmupThread[] threads = new WarmupThread[nthreads];
         for (int i = 0; i < nthreads; ++i) {
             int st = i*perThread;
             int end = (i+1)*perThread;
+            
             threads[i] = new WarmupThread(st, end, dbip, caches, dbname, dbpass);
             threads[i].start();
         }
@@ -113,9 +114,9 @@ public class YCSBWarmpup {
         public void run() {
             Map<String, Object> tres = new HashMap<>();
             for (int i = start; i < end; i++) {
-                if (i % 10000 == 0) {
+//                if (i % 10000 == 0) {
                     System.out.println("Warmup "+i+"...");
-                }
+//                }
                 
                 try {
                     if (cache == null) {
