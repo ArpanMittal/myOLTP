@@ -65,7 +65,7 @@ public class ReadRecord extends Procedure{
 			results[7] = user_result.getField_08();
 			results[8] = user_result.getField_09();
 			results[9] = user_result.getField_10();
-			System.out.println(results[9]);
+			//System.out.println(results[9]);
 			conn.commit();
 			
 			try {

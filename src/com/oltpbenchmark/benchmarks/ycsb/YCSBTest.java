@@ -77,11 +77,11 @@ public class YCSBTest {
 	        try {
 	        	String results[] = new String[20];
 	        	ArrayList<String[]> result_scan = new ArrayList<String[]>();
-	            for (int i = 1; i <2; i++) {
+	            for (int i = 805; i <806; i++) {
 	            	//readRecord.run(conn, 2, results);
 	                //readRecord.run(conn, "10", cache);
 	                String[] val = {"99","22","23","24","25","26","27","28","29","99"};
-//	                String[] result = new String[10];
+	                String[] result = new String[10];
 //	                readRecord.run(conn, "509", cache);
 	                //readRecord.run(conn, i+"", cache);
 //	                System.out.println(Stats.getAllStats().toString(2));
@@ -92,10 +92,11 @@ public class YCSBTest {
 //	                
 //	                readRecord.run(conn, "502", cache);
 //	                readModifyWriteRecord.run(conn,i+"",cache,val,result);
-	                //insertRecord.run(conn,i+"",cache,val);
-//	                deleteRecord.run(conn, cache, i+"");
+	                insertRecord.run(conn,1001+"",cache,val);
+	                deleteRecord.run(conn, cache, 1001+"");
 	                //System.out.println("after rmw");
-	                readRecord.run(conn, i+"", cache, new String[YCSBConstants.NUM_FIELDS]);
+	                readRecord.run(conn, 1001+"", cache, result);
+	                System.out.println(result[9]);
 	                //System.out.println(Stats.getAllStats().toString(2));
 	                //readRecord.run(conn, "1", cache);
 	                //deleteRecord.run(conn, cache, "520");

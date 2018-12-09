@@ -122,7 +122,9 @@ public class YCSBWarmpup {
                     if (cache == null) {
                     	readRecord.run(conn, i, new String[YCSBConstants.NUM_FIELDS]);
                     } else {
-                    	readRecord.run(conn, i+"", cache, new String[YCSBConstants.NUM_FIELDS]);
+                    	String[] result = new String[YCSBConstants.NUM_FIELDS];
+                    	readRecord.run(conn, i+"", cache, result);
+                    	System.out.println(result[9]);
                     }
                 } catch (SQLException e) {
                     // TODO Auto-generated catch block
